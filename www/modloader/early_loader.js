@@ -27,6 +27,10 @@ const { config } = require('process');
         }
     });
 
+    if (!native_fs.existsSync(path.join(base, "mods"))) {
+        native_fs.mkdirSync(path.join(base, "mods"));
+    }
+
     if (realArgv.includes("--no-mods") || !native_fs.existsSync(path.join(base, "mods"))) {
 
         window._logLine("Starting game with mods disabled");
@@ -132,6 +136,8 @@ const { config } = require('process');
     if (!native_fs.existsSync(path.join(base, "save", "mods.json"))) {
         native_fs.writeFileSync(path.join(base, "save", "mods.json"), "{}"); // gomori compatibility, otherwise it would be elsewhere
     }
+
+
 
     let config = JSON.parse(native_fs.readFileSync(path.join(base, "save", "mods.json"), "utf-8"));
 
