@@ -43,6 +43,7 @@ Because this modloader aims to be a drop-in GOMORI replacement, you can follow m
 - On SSD systems, OneLoader is much gentler when it comes to write cycles: The only writes it does are when creating logs, meaning around 50 KB per game session. GOMORI on the other hand has to patch all game files on disk every time it starts, causing significant wear with large mods or mod packs.
 - OneLoader doesn't leave any residue in main game files and assets (Unlike GOMORI's .BASIL files mandatory for restoring removed mods)
 - OneLoader doesn't require that your zips and mod folders be named precisely following the mod id, they can have any name.
+- OneLoader will run even without a `mods` folder or a `save` folder present. It will simply create them.
 
 ### Disadvantages
 - GOMORI has theoretically marginally higher runtime performance than OneLoader, although the difference is small enough that on most machines it doesn't matter.
