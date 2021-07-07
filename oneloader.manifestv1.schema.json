@@ -1,0 +1,146 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id":"https://rph.space/oneloader.manifestv1.schema.json",
+    "title":"GOMORI/OneLoader v1 mod manifest",
+    "description": "A manifest for a OMORI mod compatible with GOMORI and OneLoader",
+    "type":"object",
+    "properties":{
+        "id":{
+            "description":"The unique global ID for the mod",
+            "type":"string"
+        },
+        "name":{
+            "description":"The user-friendly display name for the mod",
+            "type":"string"
+        },
+        "description":{
+            "description":"The long text description for the mod",
+            "type":"string"
+        },
+        "version":{
+            "description":"The user-friendly version designator",
+            "type":"string"
+        },
+        "manifestVersion":{
+            "description":"The manifest version",
+            "type":"number",
+            "minimum":1,
+            "maximum":1
+        },
+        "files":{
+            "description":"Which files this mod patches",
+            "type":"object",
+            "properties":{
+                "data":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .json only and no deltas) to be patched in the data/ folder"
+                },
+                "data_delta":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .jsond only and no files) to be patched in the data/ folder, OneLoader support is legacy only and will be removed in manifest v2"
+                },
+                "data_pluto":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .yml only and no deltas) to be patched in the data/ folder, OneLoader support is legacy only and will be removed in manifest v2"
+                },
+                "data_pluto_delta":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .ymld only and no files) to be patched in the data/ folder, OneLoader support is legacy only and will be removed in manifest v2"
+                },
+                "text":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .yml only and no deltas) to be patched in the languages/en/ folder"
+                },
+                "text_delta":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .ymld only and no files) to be patched in the languages/en/ folder, OneLoader support is legacy only and will be removed in manifest v2"
+                },
+                "maps":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .json only and no deltas) to be patched in the maps/ folder"
+                },
+                "maps_delta":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .jsond only and no files) to be patched in the maps/ folder, OneLoader support is legacy only and will be removed in manifest v2"
+                },
+                "plugins":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .js only and no deltas) to be patched in the js/plugins/ folder"
+                },
+                "plugins_delta":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Files and deltas (on gomori .jsd only and no files) to be patched in the js/plugins/ folder"
+                },
+                "exec":{
+                    "type":"array",
+                    "items":{
+                        "type":"string"
+                    },
+                    "description":"Only supported on GOMORI, js files to be ran using require on game startup"
+                },
+                "asyncExec":{
+                    "type":"array",
+                    "items":{
+                        "type":"object",
+                        "properties":{
+                            "file":{
+                                "type":"string",
+                                "description":"File name in the zip directory structure"
+                            },
+                            "runat":{
+                                "type":"string",
+                                "description":"When the script should run (and how)",
+                                "enum":[
+                                    "when_discovered",
+                                    "when_discovered_require",
+                                    "pre_stage_2",
+                                    "pre_stage_2_require",
+                                    "post_stage_2",
+                                    "post_stage_2_require",
+                                    "pre_game_start",
+                                    "pre_game_start_require",
+                                    "pre_plugin_injection",
+                                    "pre_plugin_injection_require",
+                                    "pre_window_onload",
+                                    "pre_window_onload_require"
+                                ]
+                            }
+                        },
+                        "required":["file","runat"]
+                    }
+                }
+            }
+        }
+    },
+    "required":["id","name","description","manifestVersion","version","files"]
+}
