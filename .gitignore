@@ -37,3 +37,8 @@ package.json
 /www/editor.json
 /www/package.json
 /www/steam_appid.txt
+
+latest.log
+
+/www/mods/sdk_bypass.zip
+/www/save
