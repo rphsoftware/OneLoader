@@ -66,6 +66,15 @@ window._modloader_encryption = new (class Encryption {
         return Buffer.concat([iv, cipherStream.update(buffer), cipherStream.final()]);
     }
 
+    decryptAsset(buffer) {
+        buffer = buffer.slice(16);
+        for (let i = 0; i < 16; i++) {
+            buffer[i] = buffer[i] ^ this.assetKeyBytes[i];
+        }
+
+        return buffer;
+    }
+
     encryptAsset(buffer) {
         for (let i = 0; i < 16; i++) {
             buffer[i] = buffer[i] ^ this.assetKeyBytes[i];
