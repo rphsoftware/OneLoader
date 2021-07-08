@@ -1,0 +1,1 @@
+if(!$modLoader.overlayFS){alert("The OneLoader assistant mod will not work with GOMORI. Please uninstall this mod or switch from GOMORI to OneLoader");}

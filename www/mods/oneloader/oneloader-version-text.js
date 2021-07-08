@@ -1,3 +1,7 @@
+/*
+    This file is part of the OneLoader project and is licensed under the same terms (MIT)
+*/
+
 {
     const _injection_point_1 = Scene_OmoriTitleScreen.prototype.createVersionText;
     Scene_OmoriTitleScreen.prototype.createVersionText = function() {
