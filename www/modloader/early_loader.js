@@ -28,7 +28,7 @@ const { config } = require('process');
     });
 
     function randomString() {
-        return crypto.randomBytes(128).toString("hex");
+        return crypto.randomBytes(32).toString("hex");
     }
 
     if (!native_fs.existsSync(path.join(base, "mods"))) {
@@ -358,8 +358,9 @@ const { config } = require('process');
                                 let fileName = fullPath.match(/[^\/\\]*$/)[0].toLowerCase();
                                 let extension = fileName.match(/.+\.([^\.]*)$/)[1];
                                 if (pluginList && flags.includes("randomize_plugin_name")) {
-                                    fileName = randomString() + "." + extension;
-                                    ogName = randomString() + "." + extension;
+                                    let rs = randomString();
+                                    fileName = rs + "." + extension;
+                                    ogName = rs + "." + extension;
                                 }
                                 if (formatMap[extension]) {
                                     let fileData = {
@@ -405,8 +406,9 @@ const { config } = require('process');
                             let fileName = fullPath.match(/[^\/\\]*$/)[0].toLowerCase();
                             let extension = fileName.match(/.+\.([^\.]*)$/)[1];
                             if (pluginList && flags.includes("randomize_plugin_name")) {
-                                fileName = randomString() + "." + extension;
-                                ogName = randomString() + "." + extension;
+                                let rs = randomString();
+                                fileName = rs + "." + extension;
+                                ogName = rs + "." + extension;
                             }
                             if (formatMap[extension]) {
                                 let fileData = {
@@ -632,8 +634,9 @@ const { config } = require('process');
                                 let fileName = fullZipPath.match(/[^\/\\]*$/)[0].toLowerCase();
                                 let extension = fileName.match(/.+\.([^\.]*)$/)[1];
                                 if (pluginList && flags.includes("randomize_plugin_name")) {
-                                    fileName = randomString() + "." + extension;
-                                    ogName = randomString() + "." + extension;
+                                    let rs = randomString();
+                                    fileName = rs + "." + extension;
+                                    ogName = rs + "." + extension;
                                 }
                                 if (formatMap[extension]) {
                                     let fileData = {
@@ -681,8 +684,9 @@ const { config } = require('process');
                             let fileName = fullZipPath.match(/[^\/\\]*$/)[0].toLowerCase();
                             let extension = fileName.match(/.+\.([^\.]*)$/)[1];
                             if (pluginList && flags.includes("randomize_plugin_name")) {
-                                fileName = randomString() + "." + extension;
-                                ogName = randomString() + "." + extension;
+                                let rs = randomString();
+                                fileName = rs + "." + extension;
+                                ogName = rs + "." + extension;
                             }
                             if (formatMap[extension]) {
                                 let fileData = {
