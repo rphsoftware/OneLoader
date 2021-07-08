@@ -221,11 +221,11 @@ async function _modloader_stage2(config, knownMods) {
                     conflictFiles.delete(k);
                 }
             } else {
-                config._deltaPreference[crid] = /*await _safe_prompt(
+                config._deltaPreference[crid] = await _safe_prompt(
                     conflictFiles.get(k)[0].mod.json.name,
                     "Deltas from: " + deltaFiles.get(k).map(a => a.mod.json.name).join(", "),
                     "There is a file which can either be delta patched by 1 or more mods (" + deltaFiles.get(k).map(a => a.mod.json.name).join(", ") + ") or entirely replaced by " + conflictFiles.get(k)[0].mod.json.name + ". Which do you prefer?"
-                );*/ 2;
+                );;
                 if (config._deltaPreference[crid] === 1) {
                     deltaFiles.delete(k);
                 } else {
