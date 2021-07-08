@@ -41,8 +41,10 @@ const { config } = require('process');
         await _start_game();
         return;
     }
+
     try {
 
+    const ID_BLACKLIST = ["gomori"];
     const EXTENSION_RULES = {
         "png":{"encrypt":"rpgmaker", "target_extension":"rpgmvp"},
         "ogg":{"encrypt":"rpgmaker", "target_extension":"rpgmvo"}
@@ -244,6 +246,11 @@ const { config } = require('process');
 
             allMods.set(modJson.id, modJson);
             let flags = modJson._flags || [];
+            if (ID_BLACKLIST.includes(modJson.id)) {
+                window._logLine("[ERROR] ID blacklisted, skipping");
+                errorCount++;
+                continue;
+            }
             if (config[modJson.id] === false) {
                 if (!flags.includes("prevent_disable")) {
                     window._logLine("| Mod disabled, skipping");
@@ -511,6 +518,11 @@ const { config } = require('process');
 
             allMods.set(modJson.id, modJson);
             let flags = modJson._flags || [];
+            if (ID_BLACKLIST.includes(modJson.id)) {
+                window._logLine("[ERROR] ID blacklisted, skipping");
+                errorCount++;
+                continue;
+            }
             if (config[modJson.id] === false) {
                 if (!flags.includes("prevent_disable")) {
                     window._logLine("| Mod disabled, skipping");
