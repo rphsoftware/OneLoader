@@ -62,12 +62,13 @@ You can reach me via Discord through DMs ( Rph#9999 is my tag ), via the [OMORI 
 - [x] Preview 1 (We are here)
 
 - [ ] Preview 2 
-  - [ ]In-game mod manager akin to that of gomori
-  - [ ] Replacement for the exec field (most likely `asyncExec`)
+  - [ ] In-game mod manager akin to that of gomori
+  - [ ] Functionalities of the PlaytestMaker built-in to the in-game helper mod
 
 - [ ] Preview 3
+  - [ ] Replacement for the exec field (most likely `asyncExec`)
   - [ ] Bug fixes
-  - [ ] Functionalities of the PlaytestMaker built-in to the in-game helper mod
+  
 - [ ] Full release v1.0.0
   - [ ] Improvements to the loading UI
   - [ ] More bug fixes
