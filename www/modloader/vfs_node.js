@@ -99,6 +99,29 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             return nativefs.statSync(_native_fs_location);
         }
     }
+
+    async function _exec_vfs_stat_async(components) {
+        let file = components.pop();
+        let nfsstat = require('util').promisify(nativefs.stat);
+        try {
+            let current = $modLoader.overlayFS;
+            for (let c of components) {
+                current = current[c].children;
+            }
+
+            if (current[file].type === "dir") {
+                return new BogusStats(true, 0);
+            }
+            if (current[file].dataSource) {
+                return new BogusStats(false, 0);
+            }
+
+            throw new Error("What even the fuck happened");
+        } catch(e) {
+            let _native_fs_location = path.join(path.join(base, ...components), file);
+            return await nfsstat(_native_fs_location);
+        }
+    }
     window._exec_vfs_readdir = exec_vfs_readdir;
     window._exec_vfs_stat = exec_vfs_stat;
 
@@ -225,7 +248,7 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             let [mode, components] = determine_location(path);
             if (mode === 0) return nativefs.stat(...arguments);
             else {
-                callback(null, _exec_vfs_stat(components));
+                callback(null, await _exec_vfs_stat_async(components));
             }
         },
         statSync() {
