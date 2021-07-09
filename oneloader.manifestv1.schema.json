@@ -122,7 +122,6 @@
                                 "description":"When the script should run (and how)",
                                 "enum":[
                                     "when_discovered",
-                                    "when_discovered_require",
                                     "pre_stage_2",
                                     "pre_stage_2_require",
                                     "post_stage_2",
