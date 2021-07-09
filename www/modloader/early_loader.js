@@ -95,7 +95,9 @@
             "post_stage_2":[],
             "pre_game_start":[],
             "pre_plugin_injection":[],
-            "pre_window_onload":[]
+            "pre_window_onload":[],
+            "when_discovered_2":[],
+            "when_discovered_3":[]
         },
         async $runRequire(data, p) {
             native_fs.writeFileSync(path.join(base, "temp_ONELOADER.js"), data);
@@ -266,7 +268,9 @@
                 for(let {file, runat} of this.json.asyncExec) {
                     let fileData = await _read_file(await this.resolveDataSource(file));
                     if (runat === "when_discovered") {
-                        $modLoader.$runEval(fileData);
+                        $modLoader.$runEval(fileData, {
+                            mod: this
+                        });
                     } else {
                         let data = fileData.toString("utf-8");
                         let req = false;
@@ -282,13 +286,19 @@
             }
         }
         async processV1Mod() {
+            await this.processAsyncExecV1();
             if (this.json.files.assets) {
                 await this.processAssetsV1(this.json.files.assets);
             }
+            await $modLoader.$runScripts("when_discovered_2", {
+                mod: this
+            });
             for (let rule of DATA_RULES) {
                 await this.processDataRulesV1(rule);
             }
-            await this.processAsyncExecV1();
+            await $modLoader.$runScripts("when_discovered_3", {
+                mod: this
+            });
         }
         async processMod() {
             if (this.json.manifestVersion === 1) {
