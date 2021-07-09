@@ -340,9 +340,7 @@ async function _modloader_stage2(config, knownMods) {
         alert("Please note that SOME patching was skipped due to errors. The following files will remain vanilla: " + deltaSkip.map(a => a[1]).join(",") +"\nError detalis can be found in latest.log");
     }
 
-    window.$modLoader = {
-        overlayFS
-    }
+    window.$modLoader.overlayFS = overlayFS;
 
     if (global && global.gc) global.gc();
     progressBar.remove();
