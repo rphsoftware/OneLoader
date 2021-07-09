@@ -2,7 +2,191 @@
     This file is part of the OneLoader project and is licensed under the same terms (MIT)
 */
 {
-    class OneLoaderModList extends Window_OmoMenuOptionsGeneral {
+    class OneLoaderWindowBase extends Window_Selectable {
+        initialize() {
+            // Make Options List
+            this.makeOptionsList();
+            // Super Call
+            super.initialize(0, 0, this.windowWidth(), this.windowHeight());
+            // Create Option Cursors
+            this.createOptionCursors();
+            this.select(0);
+            this.refresh();
+        }
+        isUsingCustomCursorRectSprite() { return true; }
+        standardPadding() { return 8; }
+        windowWidth() { return Graphics.width -  20; }
+        windowHeight() { return 318; }
+        maxItems() { return this._optionsList.length;}
+        maxCols() { return 1;}
+        itemHeight() { return 75; }
+        spacing() { return 5; }
+        customCursorRectXOffset() { return 15; }
+        customCursorRectYOffset() { return -18; }
+        get height() { return this._height; }
+        set height(value) {
+            this._height = value;
+            this._refreshAllParts();
+            // If Option Cursors Exist
+            if (this._optionCursors) {
+              for (var i = 0; i < this._optionCursors.length; i++) {
+                var sprite = this._optionCursors[i];
+                sprite.visible = value >= (sprite.y + sprite.height)
+              };
+            }
+        }
+        _refreshArrows() {
+            super._refreshArrows();
+            var w = this._width;
+            var h = this._height;
+            var p = 28;
+            var q = p/2;
+            this._downArrowSprite.move(w - q, h - q);
+            this._upArrowSprite.move(w - q, q);
+        }
+        createOptionCursors() {
+            // Initialize Option Cursors
+            this._optionCursors = [];
+            // Create Cursor Sprites
+            for (var i = 0; i < 4; i++) {
+                // Create Sprite
+                var sprite = new Sprite_WindowCustomCursor(undefined, this.customCursorRectBitmapName());
+                sprite.deactivate();
+                sprite.visible = false;
+                sprite.setColorTone([-80, -80, -80, 255]);
+                this._customCursorRectSpriteContainer.addChild(sprite);
+                // Add Sprite to Option Cursors
+                this._optionCursors[i] = sprite;
+            };
+        };
+        _updateArrows() {
+            super._updateArrows();
+            this._downArrowSprite.visible = this._downArrowSprite.visible && !!this.active;
+            this._upArrowSprite.visible = this._upArrowSprite.visible && !!this.active;
+        }
+        drawItem(index) {
+            // Get Item Rect
+            var rect = this.itemRect(index);
+            // Get Data
+            var data = this._optionsList[index];
+            // If Data Exists
+            if (data) {
+                // Draw Option Segment
+                this.drawOptionSegment(data.header, data.options, data.spacing, rect);
+            };
+        }
+        drawOptionSegment(header, options, spacing, rect) {
+            // Draw Header
+            this.contents.drawText(header, rect.x + 50, rect.y, rect.width, 24);
+            // Go Through Options
+            for (var i = 0; i < options.length; i++) {
+                // Draw Options
+                this.contents.drawText(options[i], rect.x + (100 + (i * spacing)), rect.y + 35, rect.width, 24)
+            };
+        };
+        update(index) {
+            if(!!this._processDelay) {
+                if(this._processDelay > 0) {
+                    this._processDelay--;
+                    if(this._processDelay === 8) {
+                        this._optionsList[this.index()].index === 0 ? Graphics._requestFullScreen() : Graphics._cancelFullScreen();
+                    }
+                    if(this._processDelay <= 0) {
+                        let gamepad = navigator.getGamepads()[Input._lastGamepad];
+                        if(!gamepad) {return;}
+                        for(let button of gamepad.buttons) {
+                            let descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(button), "pressed");
+                            Object.defineProperty(button, "pressed", descriptor);
+                        }
+                    }
+                    return;
+                }
+            }
+            super.update();
+        }
+        callUpdateHelp() {
+            super.callUpdateHelp();
+            if (this._helpWindow) {
+                this._helpWindow.setText(this._optionsList[this.index()].helpText);
+            };
+        }
+        cursorRight(wrap) {
+            super.cursorRight(wrap);
+            var data = this._optionsList[this.index()];
+            // Get Data
+            if(this.index() === 0 && !Graphics._isFullScreen()) {
+                SoundManager.playBuzzer();
+                return;
+            } 
+            if (data) {
+                // Set Data Index
+                data.index = (data.index + 1) % data.options.length;
+                // Process Option Command
+                this.processOptionCommand();
+                // Update Cursor
+                this.updateCursor();
+            }
+        }
+        cursorLeft(wrap) {
+            super.cursorLeft(wrap);
+            var data = this._optionsList[this.index()];
+            // Get Data
+            if(this.index() === 0 && !Graphics._isFullScreen()) {
+                SoundManager.playBuzzer();
+                return;
+            } 
+            if (data) {
+                // Get Max Items
+                var maxItems = data.options.length;
+                // Set Data Index
+                data.index = (data.index - 1 + maxItems) % maxItems;
+                // Process Option Command
+                this.processOptionCommand();
+                // Update Cursor
+                this.updateCursor();
+            };
+        }
+        updateCursor() {
+            super.updateCursor();
+            var topRow = this.topRow();
+            // Get Index
+            var index = this.index();
+            // If Option cursors Exist
+            if (this._optionCursors) {
+                // Go through Option Cursors
+                for (var i = 0; i < this._optionCursors.length; i++) {
+                    // Get Sprite
+                    var sprite = this._optionCursors[i];
+                    // Get Real Index
+                    var realIndex = topRow + i;
+                    // Get Data
+                    var data = this._optionsList[realIndex];
+                    // Get Selected State
+                    var selected = this.active ? realIndex === index : false;
+                    // If Data Exists
+                    if (data) {
+                        // Get Item Rect
+                        var rect = this.itemRect(realIndex);
+                        // Set Sprite Color
+                        sprite.setColorTone(selected ? [0, 0, 0, 0] : [-80, -80, -80, 255])
+                        // Activate Selected Sprite
+                        selected ? sprite.activate() : sprite.deactivate();
+                        // Set Sprite Positions
+                        sprite.x = (rect.x + 65) +  (data.index * data.spacing);
+                        sprite.y = rect.y + 60;
+                        // Make Sprite Visible
+                        sprite.visible = this.height >= sprite.y + sprite.height;
+                    } else {
+                        // Deactivate Sprite
+                        sprite.deactivate();
+                        // Make Sprite Invisible
+                        sprite.visible = false;
+                    };
+                };
+            }
+        }
+    }
+    class OneLoaderModList extends OneLoaderWindowBase {
         constructor() { super(...arguments); }
 
         makeOptionsList() {
@@ -218,7 +402,7 @@ ${JSON.stringify(plugins, null, 2)}`);
         alert("Decrypted to " + target);
     }
 
-    class OneLoaderDecrypt extends Window_OmoMenuOptionsGeneral {
+    class OneLoaderDecrypt extends OneLoaderWindowBase {
         constructor() { super(...arguments); }
 
         makeOptionsList() {
