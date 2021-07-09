@@ -55,6 +55,10 @@ async function _modloader_stage2(config, knownMods) {
     const rafResolve = () => new Promise(resolve => requestAnimationFrame(resolve));
     const yaml = require('./js/libs/js-yaml-master');
 
+    await $modLoader.$runScripts("pre_stage_2", {
+        config, knownMods, $modLoader
+    });
+
     const PROTECTED_FILES = [
         "js/libs/pixi.js",
         "js/libs/pixi-tilemap.js",
@@ -339,6 +343,10 @@ async function _modloader_stage2(config, knownMods) {
     if (deltaSkip.length > 0) {
         alert("Please note that SOME patching was skipped due to errors. The following files will remain vanilla: " + deltaSkip.map(a => a[1]).join(",") +"\nError detalis can be found in latest.log");
     }
+
+    await $modLoader.$runScripts("post_stage_2", {
+        config, knownMods, $modLoader, overlayFS, deltaSkip, conflictFiles, deltaFiles
+    });
 
     window.$modLoader.overlayFS = overlayFS;
 

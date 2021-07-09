@@ -4,6 +4,9 @@
         // This needs to be done to fix a performance regression in https://mods.one/mod/enabledebug
         PluginManager._parameters["yep_debugger"] = $plugins.filter(a => a.name.toLowerCase() === "yep_debugger")[0].parameters;
 
+        $modLoader.$runScripts("pre_plugin_injection", {
+            PluginManager, $plugins
+        });
         
         window._logLine("Patching $plugins");
         let game_supplied_plugins = $plugins.map( a=>a.name.toLowerCase());

@@ -96,6 +96,25 @@
             "pre_game_start":[],
             "pre_plugin_injection":[],
             "pre_window_onload":[]
+        },
+        async $runRequire(data, p) {
+            native_fs.writeFileSync(path.join(base, "temp_ONELOADER.js"), data);
+            let module = require('./temp_ONELOADER.js');
+            await module($modLoader, window, p);
+            native_fs.unlinkSync(path.join(base, "temp_ONELOADER.js"));
+        },
+        async $runEval(data, p) {
+            let fun = eval("(async function evalScript(params){" + data + "})");
+            await fun(p);
+        },
+        async $runScripts(place, p) {
+            for (let s of $modLoader.$execScripts[place]) {
+                if (s.req) {
+                    await $modLoader.$runRequire(s.data, p);
+                } else {
+                    await $modLoader.$runEval(s.data, p);
+                }
+            }
         }
     }; // BaseModLoader object
 
@@ -242,6 +261,26 @@
                 }
             }
         }
+        async processAsyncExecV1() {
+            if (this.json.asyncExec) {
+                for(let {file, runat} of this.json.asyncExec) {
+                    let fileData = await _read_file(await this.resolveDataSource(file));
+                    if (runat === "when_discovered") {
+                        $modLoader.$runEval(fileData);
+                    } else {
+                        let data = fileData.toString("utf-8");
+                        let req = false;
+                        if ((/\_require$/).test(runat)) {
+                            runat = runat.match(/(.*)\_require$/)[1];
+                            req = true;
+                        }
+                        $modLoader.$execScripts[runat].push({
+                            data, req
+                        });
+                    }
+                }
+            }
+        }
         async processV1Mod() {
             if (this.json.files.assets) {
                 await this.processAssetsV1(this.json.files.assets);
@@ -249,6 +288,7 @@
             for (let rule of DATA_RULES) {
                 await this.processDataRulesV1(rule);
             }
+            await this.processAsyncExecV1();
         }
         async processMod() {
             if (this.json.manifestVersion === 1) {
@@ -684,6 +724,9 @@
         }
 
         window._logLine("Starting game");
+
+        $modLoader.$runScripts("pre_game_start", {});
+
         await _start_game();
     };
 

@@ -76,5 +76,8 @@ async function _start_game() {
 
     progressBar.remove();
     currentLoader.remove();
+
+    $modLoader.$runScripts("pre_window_onload", {});
+
     window.onload();
 }
