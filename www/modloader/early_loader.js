@@ -227,7 +227,7 @@
                     try {
                         extension = ogName.match(/.([^\.]*$)/)[1].toLowerCase();
                     } catch(e) {}
-                    if (pluginList && this.json.flags.includes("randomize_plugin_names")) {
+                    if (pluginList && this.json._flags.includes("randomize_plugin_name")) {
                         let rs = randomString();
                         fileName = rs + "." + extension;
                         ogName = rs + "." + extension;
@@ -341,7 +341,7 @@
                 throw new Error("Failed to decode mod.json");
             }
             if (!modJson.manifestVersion) modJson.manifestVersion = 1;
-            if (!modJson.flags) modJson.flags = [];
+            if (!modJson._flags) modJson._flags = [];
             if (modJson.manifestVersion > MAX_MANIFEST_VERSION) throw new Error("ModLoader too old to load this mod");
 
             this.json = modJson;
