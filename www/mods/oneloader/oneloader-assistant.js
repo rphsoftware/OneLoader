@@ -466,6 +466,74 @@ ${JSON.stringify(plugins, null, 2)}`);
         }
     }
 
+    class OneLoaderSpecial extends OneLoaderWindowBase {
+        constructor() { super(...arguments); }
+        makeOptionsList() {
+            this._optionsList = [];
+            this._optionsList.push({
+                header: "Reset priorities",
+                options: [
+                    "CLICK HERE TO RESET PRIORITIES"
+                ],
+                helpText: "Reset preferences for delta patching and asset priority",
+                spacing: 180,
+                index: 0
+            });
+            this._optionsList.push({
+                header: "Restart game",
+                options: [
+                    "CLICK HERE TO RESTART THE GAME"
+                ],
+                helpText: "Restart the game (NOTE: May increase memory usage, old assets aren't cleared)",
+                spacing: 180,
+                index: 0
+            });
+            this._optionsList.push({
+                header: "[DEBUG] Kill VFS",
+                options: [
+                    "CLICK HERE TO KILL VFS"
+                ],
+                helpText: "DO NOT DO THIS UNLESS ASKED TO BY ONELOADER DEVELOPERS!",
+                spacing: 180,
+                index: 0
+            });
+        }
+        windowWidth() { return 620; }
+        windowHeight() { return 274; }
+
+        update() {
+            super.update();
+            if (this.children[7]) {
+                this.children[7].y = 16;
+            }
+            if(this.children[2]) {
+                this.children[2].y = 24;
+            }
+            if (this.active) {
+                if (Input.isRepeated("ok")) {
+                    if (this.index() === 0) {
+                        Input.clear();
+                        if (confirm("Reset preferences?")) {
+                            $modLoader.config._conflictResolutions = {};
+                            $modLoader.config._deltaPreference = {};
+                            $modLoader.syncConfig();
+                        }
+                    }
+                    if (this.index() === 1) {
+                        Input.clear();
+                        window.location.reload();
+                    }
+                    if (this.index() === 2) {
+                        if (confirm("This will break mods until restart. Don't do this unless asked to by OneLoader developers or if you know what you are doing!")) {
+                            __unload_web_vfs();
+                            __unload_node_vfs();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     function randomString(l) {
         return crypto.randomBytes(l).toString("hex");
     }
@@ -490,20 +558,28 @@ ${JSON.stringify(plugins, null, 2)}`);
             this._oneLoaderDecrypt.setHandler('cancel', this.onWindowCancel.bind(this));
             this.addChild(this._oneLoaderDecrypt);
 
-            this._optionWindows = [this._oneLoaderModList, this._oneLoaderDecrypt];
+            this._oneLoaderSpecial = new OneLoaderSpecial();
+            this._oneLoaderSpecial.deactivate();
+            this._oneLoaderSpecial.y = 44;
+            this._oneLoaderSpecial.setHandler('cancel', this.onWindowCancel.bind(this));
+            this.addChild(this._oneLoaderSpecial);
+
+            this._optionWindows = [this._oneLoaderModList, this._oneLoaderDecrypt, this._oneLoaderSpecial];
         }
 
         makeCommandList() {
             this.addCommand("MANAGE MODS", 'ok', true);
             this.addCommand("DECRYPT", 'ok', true);
+            this.addCommand("OPTIONS", 'ok', true);
         }
         maxCols() {
-            return 2;
+            return 3;
         }
 
         passHelpWindow(helpWindow) {
             this._oneLoaderModList._helpWindow = helpWindow;
             this._oneLoaderDecrypt._helpWindow = helpWindow;
+            this._oneLoaderSpecial._helpWindow = helpWindow;
             this._helpWindow = helpWindow;
         }
         onManageMods() {
@@ -514,6 +590,9 @@ ${JSON.stringify(plugins, null, 2)}`);
             } else if (this.index() === 1) { 
                 this._oneLoaderDecrypt.activate();
                 this._oneLoaderDecrypt.select(0);
+            } else if (this.index() === 2) { 
+                this._oneLoaderSpecial.activate();
+                this._oneLoaderSpecial.select(0);
             } else {
                 this.activate();
             }
@@ -527,6 +606,10 @@ ${JSON.stringify(plugins, null, 2)}`);
             if (this.index() === 1) {
                 this._oneLoaderDecrypt.select(0);
                 this._oneLoaderDecrypt.refresh();
+            }
+            if (this.index() === 2) {
+                this._oneLoaderSpecial.select(0);
+                this._oneLoaderSpecial.refresh();
             }
 
             this._helpWindow.clear();
@@ -542,6 +625,10 @@ ${JSON.stringify(plugins, null, 2)}`);
             } else if (this.index() === 1) {
                 if (this._helpWindow) {
                     this._helpWindow.setText("Decrypt the game here");
+                }
+            } else if (this.index() === 2) {
+                if (this._helpWindow) {
+                    this._helpWindow.setText("General OneLoader options");
                 }
             }
         }

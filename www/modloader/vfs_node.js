@@ -341,4 +341,8 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             return old_require.call(this, what);
         }
     }
+
+    window.__unload_node_vfs = function() {
+        window.require = old_require;
+    }
 }

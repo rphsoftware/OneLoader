@@ -68,6 +68,9 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
                     setTimeout(resolve, 100);
                 });
 
+                window.__unload_web_vfs = function() {
+                    chrome.debugger.detach(debugee);
+                };
                 window.addEventListener("beforeunload", function(e) {
                     chrome.debugger.detach(debugee);
                 });
