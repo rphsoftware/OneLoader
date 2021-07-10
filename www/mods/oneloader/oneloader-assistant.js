@@ -44,6 +44,9 @@
             this._downArrowSprite.move(w - q, h - q);
             this._upArrowSprite.move(w - q, q);
         }
+        processOptionCommand() {
+
+        }
         createOptionCursors() {
             // Initialize Option Cursors
             this._optionCursors = [];
@@ -438,9 +441,6 @@ ${JSON.stringify(plugins, null, 2)}`);
 
         windowWidth() { return 620; }
         windowHeight() { return 274; }
-        processOptionCommand() {
-
-        }
 
         update() {
             super.update();
