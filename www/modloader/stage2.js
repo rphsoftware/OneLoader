@@ -238,6 +238,8 @@ async function _modloader_stage2(config, knownMods) {
             }
         }
     }
+    
+    native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify(config, null, 2));
 
     window._logLine("Building overlayFS image");
     currentLoader.innerText = "Building base overlay"
