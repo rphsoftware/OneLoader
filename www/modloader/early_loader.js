@@ -236,7 +236,7 @@
                         let format = formatMap[extension];
                         let fileData = {
                             injectionPoint: mountPoint + "/" + fileName.replace(new RegExp(extension + "$"), format.target),
-                            ogName: oogName.replace(new RegExp(extension + "$", "i"), format.target),
+                            ogName: ogName.replace(new RegExp(extension + "$", "i"), format.target),
                             mode: format.encrypt ? "steam" : "pass",
                             dataSource: await this.resolveDataSource(path.join(base, oogName)),
                             delta: format.delta
