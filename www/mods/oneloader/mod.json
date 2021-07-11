@@ -15,5 +15,11 @@
             "oneloader-version-text.js",
             "oneloader-detect-gomori.js"
         ]
-    }
+    },
+    "asyncExec":[
+        {
+            "file":"oneloader-fix-videos.js",
+            "runat":"pre_window_onload"
+        }
+    ]
 }
