@@ -134,6 +134,7 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             let [mode, components] = determine_location(path);
             if (mode === 0) return nativefs.readFile(...arguments);
             else {
+                $modLoader.$vfsTrace("[NODEJS READ] " + path);
                 try {
                     let fileData = await _vfs_resolve_file(components.join("/"));
                     if (options) {
@@ -160,6 +161,7 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             let [mode, components] = determine_location(path);
             if (mode === 0) return nativefs.readFileSync(...arguments);
             else {
+                $modLoader.$vfsTrace("[NODEJS READ] " + path);
                 let fileData = _vfs_resolve_file_sync(components.join("/"));
                 if (options) {
                     if(typeof options === "string") {
@@ -205,6 +207,7 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             let [mode, components] = determine_location(path);
             if (mode === 0) return nativefs.readdir(...arguments);
             else {
+                $modLoader.$vfsTrace("[NODEJS READDIR] " + path);
                 callback(null, _exec_vfs_readdir(components));
             }
         },
@@ -216,6 +219,7 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             let [mode, components] = determine_location(path);
             if (mode === 0) return nativefs.readdirSync(...arguments);
             else {
+                $modLoader.$vfsTrace("[NODEJS READDIR] " + path);
                 return _exec_vfs_readdir(components);
             }
         },

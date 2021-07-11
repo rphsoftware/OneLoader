@@ -10,6 +10,7 @@
     const base = path.dirname(process.mainModule.filename);
 
     async function _vfs_resolve_file(relativePath) {
+        $modLoader.$vfsTrace("[ResolveSyncStart] " + relativePath);
         relativePath = relativePath.toLowerCase();
         let dirTree = _overlay_fs_split_path(relativePath);
         let currentDir = $modLoader.overlayFS;
@@ -44,6 +45,7 @@
         }
 
         if (bail) {
+            $modLoader.$vfsTrace("[ResolveSyncBail] " + relativePath);
             if (/\%[0-9A-Fa-f]{2,}/.test(relativePath)) {
                 let splitRelativePth = _overlay_fs_split_path(relativePath);
                 let finrelp = [];
@@ -59,6 +61,7 @@
             }
             return await async_fs.readFile(path.join(base, relativePath));
         } else {
+            $modLoader.$vfsTrace("[ResolveSyncVFS] " + relativePath);
             let data = await _read_file(entry.dataSource);
             if (entry.mode === "pass") return data;
             if (entry.mode === "rpgmaker") return _modloader_encryption.encryptAsset(data);
@@ -68,6 +71,7 @@
     }
 
     function _vfs_resolve_file_sync(relativePath) {
+        $modLoader.$vfsTrace("[ResolveSyncStart] " + relativePath);
         relativePath = relativePath.toLowerCase();
         let dirTree = _overlay_fs_split_path(relativePath);
         let currentDir = $modLoader.overlayFS;
@@ -94,8 +98,10 @@
         }
 
         if (bail) {
+            $modLoader.$vfsTrace("[ResolveSyncBail] " + relativePath);
             return native_fs.readFileSync(path.join(base, relativePath));
         } else {
+            $modLoader.$vfsTrace("[ResolveSyncVFS] " + relativePath);
             let data = _read_file_sync(entry.dataSource);
             if (entry.mode === "pass") return data;
             if (entry.mode === "rpgmaker") return _modloader_encryption.encryptAsset(data);

@@ -40,6 +40,7 @@
     window._ensure_overlay_path = _ensure_overlay_path;
 
     async function _read_file(dataSource) {
+        $modLoader.$vfsTrace("[READFILE] " + dataSource.type);
         if (dataSource.type === "filesystem") {
             return await asyncRF(dataSource.path);
         }
@@ -56,6 +57,7 @@
     }
 
     function _read_file_sync(dataSource) {
+        $modLoader.$vfsTrace("[READFILE] " + dataSource.type);
         if (dataSource.type === "filesystem") {
             return fs.readFileSync(dataSource.path);
         }

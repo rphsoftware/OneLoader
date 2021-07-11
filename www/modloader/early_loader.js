@@ -117,6 +117,11 @@
                     await $modLoader.$runEval(s.data, p);
                 }
             }
+        },
+        $vfsTrace(message) {
+            if ($modLoader.realArgv.includes("--trace-vfs")) {
+                window._logLine("[TRACING] " + message);
+            }
         }
     }; // BaseModLoader object
 

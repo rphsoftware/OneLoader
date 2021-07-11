@@ -1,5 +1,6 @@
 function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
     async function buildResponseBody(data) {
+        $modLoader.$vfsTrace("WEB REQUEST " + JSON.stringify(data));
         let url = new URL(data.request.url);
 
         if (url.origin === window.location.origin && url.pathname.startsWith("/www/")) {
