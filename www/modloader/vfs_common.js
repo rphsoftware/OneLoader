@@ -77,6 +77,14 @@
         let currentDir = $modLoader.overlayFS;
         let fileName = dirTree.pop();
 
+        if (/\%[0-9A-Fa-f]{2,}/.test(fileName)) {
+            try {
+                window._logLine("Trying to decode URI component");
+                fileName = decodeURIComponent(fileName);
+                window._logLine("Decoded URI component for " + fileName);
+            } catch(e) {}
+        }
+
         let bail = false;
         let entry;
         while(dirTree.length > 0) {
