@@ -4,7 +4,7 @@
     "name":"OneLoader assistant",
     "description": "A helper mod for OneLoader",
     "manifestVersion": 1,
-    "version": "Preview-3",
+    "version": "Preview-3.1",
     "_flags":[
         "prevent_disable",
         "randomize_plugin_name"
