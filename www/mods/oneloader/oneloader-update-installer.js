@@ -9,7 +9,7 @@ if ($modLoader.config && $modLoader.config._autoUpdater && $modLoader.config._au
             headers["Authorization"] = GH_AUTH;
         }
         window._logLine("Downloading update");
-        let bundle = await fetch(params.config._autoUpdater.updateBundleURL, {headers}).then(res => res.arrayBuffer());
+        let bundle = await fetch($modLoader.config._autoUpdater.updateBundleURL, {headers}).then(res => res.arrayBuffer());
         fs.writeFileSync("_oneloader_update.zip", Buffer.from(bundle));
         let zip = new StreamZip.async({ file: "_oneloader_update.zip" });
         let entries = await zip.entries();
