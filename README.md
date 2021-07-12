@@ -12,7 +12,7 @@ Additionally, I'd like to thank the developers of GOMORI for kick-starting the m
 
 ## Installation
 ### New users:
-- Download the latest release from the github releases panel (Or click here)
+- Download the latest release from the github releases panel (Or [click here](https://github.com/rphsoftware/OneLoader/releases/latest))
 - From the downloaded zip, extract the `www` folder into the main folder of the game (For instance `C:\Program Files (x86)\Steam\steamapps\common\OMORI`)
 - You should get prompted to replace the index.html file in the game folder. Select yes, that's needed to get the modloader working.
 - Run the game once so that the modloader can create all the required files and folders.
