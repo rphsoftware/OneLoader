@@ -13,6 +13,9 @@ async function fetchLatestReleaseMeta() {
     let meta = resp[0];
     let uid = meta.body.match(/auid\=(.+)/)[1];
     
+    $modLoader.config._autoUpdater.lastCheck = Date.now();
+    $modLoader.syncConfig();
+    
     if (uid !== $modLoader.knownMods.get("oneloader").json.version) {
         if (!$modLoader.config._autoUpdater.performUpdate) {
             $modLoader.config._autoUpdater.performUpdate = true;
