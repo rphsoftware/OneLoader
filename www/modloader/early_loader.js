@@ -644,7 +644,10 @@
                 errorCount++;
             }
         }
-
+        $modLoader.config = JSON.parse(native_fs.readFileSync(path.join(base, "save", "mods.json"), "utf-8"));
+        $modLoader.syncConfig = function() {
+            native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify($modLoader.config, null, 2));
+        }
         clearInterval(b);
         progressBar.remove();
         currentLoader.remove();
@@ -660,10 +663,7 @@
         let _gomori_compat_mods = new Map();
         $modLoader.knownMods = knownMods;
         $modLoader.allMods = allMods;
-        $modLoader.config = JSON.parse(native_fs.readFileSync(path.join(base, "save", "mods.json"), "utf-8"));
-        $modLoader.syncConfig = function() {
-            native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify($modLoader.config, null, 2));
-        }
+
 
         for (let mod of knownMods.values()) {
             _gomori_compat_mods.set(mod.json.id, {
