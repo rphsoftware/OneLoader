@@ -40,7 +40,7 @@ function _safe_prompt(option1, option2, message) {
     });
 }
 
-async function _modloader_stage2(config, knownMods) {
+async function _modloader_stage2(knownMods) {
     const native_fs = require('fs');
     const util = require('util');
     const async_fs = { // old node polyfill bruh
@@ -56,7 +56,7 @@ async function _modloader_stage2(config, knownMods) {
     const yaml = require('./js/libs/js-yaml-master');
 
     await $modLoader.$runScripts("pre_stage_2", {
-        config, knownMods, $modLoader
+         knownMods, $modLoader
     });
 
     const PROTECTED_FILES = [
@@ -166,12 +166,12 @@ async function _modloader_stage2(config, knownMods) {
     progressBar.removeAttribute("value");
     currentLoader.innerText = "Resolving conflicts";
 
-    if (!config._conflictResolutions) {
-        config._conflictResolutions = {};
+    if (!$modLoader.config._conflictResolutions) {
+        $modLoader.config._conflictResolutions = {};
     }
 
-    if (!config._deltaPreference) {
-        config._deltaPreference = {};
+    if (!$modLoader.config._deltaPreference) {
+        $modLoader.config._deltaPreference = {};
     }
 
     for (let k of conflictFiles.keys()) {
@@ -196,14 +196,14 @@ async function _modloader_stage2(config, knownMods) {
             let m1 = e[1].mod.json.id;
 
             let crid = `${m0}\u0000${m1}`;
-            if (config._conflictResolutions[crid]) {
-                if (config._conflictResolutions[crid] === 2) { // prefer second?
+            if ($modLoader.config._conflictResolutions[crid]) {
+                if ($modLoader.config._conflictResolutions[crid] === 2) { // prefer second?
                     e.splice(0, 1); // remove first
                 } else { // prefer first?
                     e.splice(1, 1); // remove second
                 }
             } else {
-                config._conflictResolutions[crid] = await _safe_prompt(
+                $modLoader.config._conflictResolutions[crid] = await _safe_prompt(
                     e[0].mod.json.name,
                     e[1].mod.json.name,
                     "The following mods alter some of the same files. Which mod would you like to prioritize?"
@@ -212,25 +212,25 @@ async function _modloader_stage2(config, knownMods) {
         }
     }
 
-    native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify(config, null, 2));
+    $modLoader.syncConfig();
 
     for (let k of deltaFiles.keys()) {
         if (conflictFiles.has(k)) {
             // well we have to deal with that shit now, so hey
             let crid = `${conflictFiles.get(k)[0].mod.json.id}\u0000\u0001\u0000${deltaFiles.get(k).map(a => a.mod.json.id).join("\u0000")}`;
-            if (config._deltaPreference[crid]) {
-                if (config._deltaPreference[crid] === 1) {
+            if ($modLoader.config._deltaPreference[crid]) {
+                if ($modLoader.config._deltaPreference[crid] === 1) {
                     deltaFiles.delete(k);
                 } else {
                     conflictFiles.delete(k);
                 }
             } else {
-                config._deltaPreference[crid] = await _safe_prompt(
+                $modLoader.config._deltaPreference[crid] = await _safe_prompt(
                     conflictFiles.get(k)[0].mod.json.name,
                     "Deltas from: " + deltaFiles.get(k).map(a => a.mod.json.name).join(", "),
                     "There is a file which can either be delta patched by 1 or more mods (" + deltaFiles.get(k).map(a => a.mod.json.name).join(", ") + ") or entirely replaced by " + conflictFiles.get(k)[0].mod.json.name + ". Which do you prefer?"
                 );;
-                if (config._deltaPreference[crid] === 1) {
+                if ($modLoader.config._deltaPreference[crid] === 1) {
                     deltaFiles.delete(k);
                 } else {
                     conflictFiles.delete(k);
@@ -239,7 +239,7 @@ async function _modloader_stage2(config, knownMods) {
         }
     }
     
-    native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify(config, null, 2));
+    $modLoader.syncConfig();
 
     window._logLine("Building overlayFS image");
     currentLoader.innerText = "Building base overlay"
@@ -347,7 +347,7 @@ async function _modloader_stage2(config, knownMods) {
     }
 
     await $modLoader.$runScripts("post_stage_2", {
-        config, knownMods, $modLoader, overlayFS, deltaSkip, conflictFiles, deltaFiles
+        knownMods, $modLoader, overlayFS, deltaSkip, conflictFiles, deltaFiles
     });
 
     window.$modLoader.overlayFS = overlayFS;

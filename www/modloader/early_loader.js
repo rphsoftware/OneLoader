@@ -540,7 +540,10 @@
 
 
 
-        let config = JSON.parse(native_fs.readFileSync(path.join(base, "save", "mods.json"), "utf-8"));
+        $modLoader.config = JSON.parse(native_fs.readFileSync(path.join(base, "save", "mods.json"), "utf-8"));
+        $modLoader.syncConfig = function() {
+            native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify($modLoader.config, null, 2));
+        }
 
         window._logLine("Inspecting mods");
 
@@ -564,7 +567,7 @@
         }, 30);
         let allMods = new Map();
 
-        if (config._basilFiles) { //Debasilification procedure
+        if ($modLoader.config._basilFiles) { //Debasilification procedure
             window._logLine("Gomori-derived mods.json detected, finding, restoring and removing basil files");
             progressBar.removeAttribute("value");
             currentLoader.innerText = "Undoing GOMORI-derived patches";
@@ -572,10 +575,10 @@
             try {
             await debasilify(base);
             }catch(e) {alert(e);}
-            config._basilFiles = undefined;
+            $modLoader.config._basilFiles = undefined;
             progressBar.value = 0;
             alert("The modloader tried its best to undo GOMORI-derived changes after an upgrade, however it could have missed something. For an optimal experience, it's advised to reinstall the game.");
-            native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify(config, null, 2));
+            $modLoader.syncConfig();
         }
 
 
@@ -621,13 +624,13 @@
                 errorCount++;
                 continue;
             }
-            if (config[mod.json.id] === false) {
+            if ($modLoader.config[mod.json.id] === false) {
                 if (!flags.includes("prevent_disable")) {
                     window._logLine("| Mod disabled, skipping");
                     continue;
                 }
             } else {
-                config[mod.json.id] = true;
+                $modLoader.config[mod.json.id] = true;
             }
 
             mod.json._enabled = true;
@@ -644,20 +647,17 @@
                 errorCount++;
             }
         }
-        $modLoader.config = JSON.parse(native_fs.readFileSync(path.join(base, "save", "mods.json"), "utf-8"));
-        $modLoader.syncConfig = function() {
-            native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify($modLoader.config, null, 2));
-        }
+
         clearInterval(b);
         progressBar.remove();
         currentLoader.remove();
 
         window._logLine("Early loading complete, starting loader stage 2");
-        native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify(config, null, 2));
+        $modLoader.syncConfig();
         if (errorCount > 0) {
             alert("Early loading complete with " + errorCount + " errors. Please look into latest.log and searching for [ERROR] to identify what the erorrs were.");
         }
-        await _modloader_stage2(config, knownMods);
+        await _modloader_stage2(knownMods);
 
         window._logLine("Creating GOMORI API backwards compatibility");
         let _gomori_compat_mods = new Map();
