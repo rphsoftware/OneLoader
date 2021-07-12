@@ -13,12 +13,10 @@ if ($modLoader.config && $modLoader.config._autoUpdater && $modLoader.config._au
         fs.writeFileSync("_oneloader_update.zip", Buffer.from(bundle));
         let zip = new StreamZip.async({ file: "_oneloader_update.zip" });
         let entries = await zip.entries();
-        let u = "u/";
-        try { fs.mkdirSync("u"); } catch(e) {}
         for (let el in entries) {
-            try { if (entries[el].isDirectory) { fs.mkdirSync(u + el); } } catch(e) {}
+            try { if (entries[el].isDirectory) { fs.mkdirSync(el); } } catch(e) {}
             if (entries[el].isDirectory) continue;
-            fs.writeFileSync(u + el, await zip.entryData(el));
+            fs.writeFileSync(el, await zip.entryData(el));
         }
         $modLoader.config._autoUpdater.performUpdate = false;
         $modLoader.config._autoUpdater.updateBundleURL = undefined;
