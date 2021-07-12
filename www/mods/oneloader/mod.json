@@ -4,7 +4,7 @@
     "name":"OneLoader assistant",
     "description": "A helper mod for OneLoader",
     "manifestVersion": 1,
-    "version": "Preview-3.2",
+    "version": "Preview-3.2.1",
     "_flags":[
         "prevent_disable",
         "randomize_plugin_name"
@@ -20,6 +20,14 @@
         {
             "file":"oneloader-fix-videos.js",
             "runat":"pre_window_onload"
+        },
+        {
+            "file":"oneloader-updater.js",
+            "runat":"pre_window_onload"
+        },
+        {
+            "file":"oneloader-update-installer.js",
+            "runat":"pre_stage_2"
         }
     ]
 }

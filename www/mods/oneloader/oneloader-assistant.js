@@ -471,6 +471,15 @@ ${JSON.stringify(plugins, null, 2)}`);
         makeOptionsList() {
             this._optionsList = [];
             this._optionsList.push({
+                header: "Automatic updating",
+                options: [
+                    "ALLOW", "DENY"
+                ],
+                helpText: "Should OneLoader automatically update?",
+                spacing: 180,
+                index: $modLoader.config._autoUpdater.check === "allow" ? 0 : 1
+            })
+            this._optionsList.push({
                 header: "Reset priorities",
                 options: [
                     "CLICK HERE TO RESET PRIORITIES"
@@ -498,6 +507,13 @@ ${JSON.stringify(plugins, null, 2)}`);
                 index: 0
             });
         }
+        processOptionCommand() {
+            if (this.index() === 0) {
+                $modLoader.config._autoUpdater.check = this._optionsList[0].index === 0 ? "allow" : "deny";
+                $modLoader.syncConfig();
+                console.log($modLoader.config._autoUpdater);
+            }
+        }
         windowWidth() { return 620; }
         windowHeight() { return 274; }
 
@@ -511,7 +527,7 @@ ${JSON.stringify(plugins, null, 2)}`);
             }
             if (this.active) {
                 if (Input.isRepeated("ok")) {
-                    if (this.index() === 0) {
+                    if (this.index() === 1) {
                         Input.clear();
                         if (confirm("Reset preferences?")) {
                             $modLoader.config._conflictResolutions = {};
@@ -519,11 +535,11 @@ ${JSON.stringify(plugins, null, 2)}`);
                             $modLoader.syncConfig();
                         }
                     }
-                    if (this.index() === 1) {
+                    if (this.index() === 2) {
                         Input.clear();
                         window.location.reload();
                     }
-                    if (this.index() === 2) {
+                    if (this.index() === 3) {
                         if (confirm("This will break mods until restart. Don't do this unless asked to by OneLoader developers or if you know what you are doing!")) {
                             __unload_web_vfs();
                             __unload_node_vfs();
