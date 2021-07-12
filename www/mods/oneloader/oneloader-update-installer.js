@@ -1,4 +1,4 @@
-let GH_AUTH="token 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";
+let GH_AUTH="";
 const fs = require('fs');
 const StreamZip = require('./modloader/node_stream_zip.js');
 
