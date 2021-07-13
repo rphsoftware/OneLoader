@@ -59,7 +59,7 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
                             enabled: true, 
                             patterns: [ 
                                 {
-                                    urlPattern: window.location.origin + "/*",
+                                    urlPattern: window.location.origin + "/www/*",
                                     interceptionStage: "HeadersReceived"
                                 }
                             ]
