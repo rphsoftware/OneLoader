@@ -532,7 +532,7 @@
         // Initialize on-screen logging framework
         window._logLine("Loading configuration");
         if (!native_fs.existsSync(path.join(base, "save"))) {
-            native_fs.mkdir(path.join(base, "save"));
+            native_fs.mkdirSync(path.join(base, "save"));
         }
         if (!native_fs.existsSync(path.join(base, "save", "mods.json"))) {
             native_fs.writeFileSync(path.join(base, "save", "mods.json"), "{}"); // gomori compatibility, otherwise it would be elsewhere
