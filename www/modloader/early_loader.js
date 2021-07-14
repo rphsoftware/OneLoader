@@ -480,7 +480,7 @@
         async resolveDataSource(sPath) { 
             return {
                 type: "filesystem",
-                path: path.join(this.basePath, sPath)
+                path: path.join(this.basePath, this.rootPath, sPath)
             }
         }
         get type() { return "dir"; }
