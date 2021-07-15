@@ -359,7 +359,9 @@
             $modLoader.$log("Initializing a zip mod from " + this.basePath);
             this.fd = native_fs.openSync(this.basePath, "r");
             this.sz = new StreamZip.async({fd: this.fd});
-            this.sz.resolvedStreamZip = await this.sz[Object.getOwnPropertySymbols(this.sz)[0]];
+            let sym = Object.getOwnPropertySymbols(this.sz);
+            sym = sym.filter(a => a.toString() === "Symbol(zip)");
+            this.sz.resolvedStreamZip = await this.sz[sym[0]];
             this._entryCache = await this.sz.entries();
             this._rootsCache = new Set();
         }
