@@ -122,7 +122,8 @@
             if ($modLoader.realArgv.includes("--trace-vfs")) {
                 window._logLine("[TRACING] " + message);
             }
-        }
+        },
+        $nwMajor: parseInt(process.versions.nw.match(/^\d*\.(\d*)\.\d*$/)[1])
     }; // BaseModLoader object
 
     /* Install the argv handler and shadow the true argv object to allow the base game to work normally */ { 
