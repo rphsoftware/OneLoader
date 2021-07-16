@@ -195,6 +195,8 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             if (arguments.length === 2) { [file, data] = arguments; }
             if (arguments.length === 3) { [file, data, options] = arguments; }
 
+            if (typeof data === "number") { data = data.toString(); arguments[1] = data; }
+
             let [mode] = determine_location(file);
             if (mode === 0) return nativefs.writeFileSync(...arguments);
             else {
