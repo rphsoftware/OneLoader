@@ -326,10 +326,10 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
         async rename(o, n, callback) {
             let [mode_1] = determine_location(o);
             let [mode_2] = determine_location(n);
-            if (!callback) { callback = () => {}; arguments[2] = () => {} } // thanks improved save & load for being incompliant with node.js apis
-
-            if (mode_1 === 0 && mode_2 === 0) return nativefs.rename(...arguments);
-            else {
+            if (mode_1 === 0 && mode_2 === 0) {
+                if (callback) return nativefs.rename(...arguments);
+                else return nativefs.rename(o, n, () => {});
+            } else {
                 window._logLine("Something tried to rename to or from a virtual/overlayed directory. The write was ignored. Path: " + file);
                 callback();
             }
