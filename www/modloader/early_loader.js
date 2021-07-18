@@ -523,6 +523,7 @@
                         );
                         native_fs.unlinkSync(path.join(directory, file));
 
+                        debasilificationCounter++;
                         $oneLoaderGui.setHt(`Undoing GOMORI-based patching ${debasilificationCounter}`);
                     }
                 }
