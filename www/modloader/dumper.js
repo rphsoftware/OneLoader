@@ -32,7 +32,5 @@ window._dump_overlay_fs_to_disk = async function() {
 
     await dumpInner($modLoader.overlayFS, "www");
 
-    currentLoader.remove();
-
     alert("Dumped overlay to " + _ofs_dmp_tgt);
 }
