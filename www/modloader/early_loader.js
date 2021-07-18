@@ -505,8 +505,6 @@
         }
 
         let debasilificationCounter = 0;
-        let currentLoader = document.createElement("h1");
-        currentLoader.style = "position: fixed; top: 0; margin: 0; padding: 0; left: 0; right: 0; font-size: 18px; color: white; background: hsl(200, 85%, 35%, 0.2); line-height: 40px; text-align:center;";
 
         async function debasilify(directory) {
             let files = await async_fs.readdir(directory);
@@ -525,8 +523,7 @@
                         );
                         native_fs.unlinkSync(path.join(directory, file));
 
-                        debasilificationCounter++;
-                        currentLoader.innerText = `Undoing GOMORI-based patching ${debasilificationCounter}`;
+                        $oneLoaderGui.setHt(`Undoing GOMORI-based patching ${debasilificationCounter}`);
                     }
                 }
             }
@@ -534,6 +531,7 @@
 
         // Initialize on-screen logging framework
         window._logLine("Loading configuration");
+        $oneLoaderGui.pst("Loading...");
         if (!native_fs.existsSync(path.join(base, "save"))) {
             native_fs.mkdirSync(path.join(base, "save"));
         }
@@ -553,41 +551,31 @@
         let mod_files = await async_fs.readdir(path.join(base, "mods"));
         window._logLine(mod_files.length + " entries in mods/");
 
+        $oneLoaderGui.setPbCurr(0);
+        $oneLoaderGui.setPbMax(mod_files.length);
+
         let errorCount = 0;
         let knownMods = new Map();
 
-        let progressBar = document.createElement("progress");
-        progressBar.max = mod_files.length;
-        progressBar.value = 0;
-        progressBar.style = "position: fixed; top: 40px; height: 16px; left: 0; right: 0; width: 640px; font-size: 18px;";
-
-        let b = setInterval(function() {
-            if (document.body) {
-                document.body.appendChild(progressBar);
-                document.body.appendChild(currentLoader);
-                clearInterval(b);
-            }
-        }, 30);
         let allMods = new Map();
 
         if ($modLoader.config._basilFiles) { //Debasilification procedure
             window._logLine("Gomori-derived mods.json detected, finding, restoring and removing basil files");
-            progressBar.removeAttribute("value");
-            currentLoader.innerText = "Undoing GOMORI-derived patches";
-
             try {
             await debasilify(base);
             }catch(e) {alert(e);}
             $modLoader.config._basilFiles = undefined;
-            progressBar.value = 0;
             alert("The modloader tried its best to undo GOMORI-derived changes after an upgrade, however it could have missed something. For an optimal experience, it's advised to reinstall the game.");
             $modLoader.syncConfig();
         }
 
 
+        $oneLoaderGui.setHt("Inspecting mods");
+
         for (let mod_file of mod_files) {
-            currentLoader.innerText = "Early loading: " + mod_file;
-            progressBar.value++;
+            $oneLoaderGui.pst("Early loading: " + mod_file);
+            $oneLoaderGui.inc();
+
             if (mod_file.startsWith("_")) {
                 window._logLine("> Skipping: " + mod_file + " because name starts with _");
                 continue;
@@ -650,10 +638,6 @@
                 errorCount++;
             }
         }
-
-        clearInterval(b);
-        progressBar.remove();
-        currentLoader.remove();
 
         window._logLine("Early loading complete, starting loader stage 2");
         $modLoader.syncConfig();

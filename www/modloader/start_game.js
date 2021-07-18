@@ -24,30 +24,16 @@ async function _start_game() {
         {rel: "stylesheet", type:"text/css", href:"fonts/gamefont.css"}
     ];
 
-    let progressBar = document.createElement("progress");
-    progressBar.max = headAppendix.length + scripts.length;
-    progressBar.value = 0;
-    progressBar.style = "position: fixed; top: 40px; height: 16px; left: 0; right: 0; width: 640px; font-size: 18px;";
-
-    let currentLoader = document.createElement("h1");
-    currentLoader.style = "position: fixed; top: 0; margin: 0; padding: 0; left: 0; right: 0; font-size: 18px; color: white; background: hsl(200, 85%, 35%, 0.2); line-height: 40px; text-align:center;";
-    currentLoader.innerText = "Starting the game";
-    try {
-        document.body.appendChild(progressBar);
-        document.body.appendChild(currentLoader);
-    } catch(e) {
-        setTimeout(function() {
-            document.body.appendChild(progressBar);
-            document.body.appendChild(currentLoader);
-        }, 500);
-    }
+    $oneLoaderGui.setHt("Starting the game");
+    $oneLoaderGui.setPbCurr(0);
+    $oneLoaderGui.setPbMax(headAppendix.length + scripts.length);
 
     async function prepareIconData() {
         return "data:image/png;base64," + (await _vfs_resolve_file("icon/icon.png")).toString("base64");
     }
 
     for (let a of headAppendix) {
-        progressBar.value++;
+        $oneLoaderGui.inc();
         await rafResolve();
         if (a.rel === "icon" && !a.href) { a.href = await prepareIconData(); }
         let l = document.createElement("link");
@@ -63,8 +49,8 @@ async function _start_game() {
         }
     }
     for (let script of scripts) {
-        progressBar.value++;
-        currentLoader.innerText = "This may take up to 25 seconds";
+        $oneLoaderGui.inc();
+        $oneLoaderGui.setHt("This may take up to 25 seconds", true);
         await rafResolve();
         let s = document.createElement("script");
         s.src = script;
@@ -73,9 +59,6 @@ async function _start_game() {
             s.onload = resolve;
         })
     }
-
-    progressBar.remove();
-    currentLoader.remove();
 
     await $modLoader.$runScripts("pre_window_onload", {});
 

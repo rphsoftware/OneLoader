@@ -79,22 +79,13 @@ async function _modloader_stage2(knownMods) {
         "js/main.js",
     ];
 
-    let progressBar = document.createElement("progress");
-    progressBar.max = knownMods.size;
-    progressBar.value = 0;
-    progressBar.style = "position: fixed; top: 40px; height: 16px; left: 0; right: 0; width: 640px; font-size: 18px;";
-
-    let currentLoader = document.createElement("h1");
-    currentLoader.style = "position: fixed; top: 0; margin: 0; padding: 0; left: 0; right: 0; font-size: 18px; color: white; background: hsl(200, 85%, 35%, 0.2); line-height: 40px; text-align:center;";
-
-    document.body.appendChild(progressBar);
-    document.body.appendChild(currentLoader);
+    $oneLoaderGui.setHt("Normalizing paths");
+    $oneLoaderGui.setPbMax(knownMods.size);
+    $oneLoaderGui.setPbCurr(0);
 
     window._logLine("Normalizing injection paths");
-    progressBar.value = 0;
     knownMods.forEach(function(v, k) {
-        progressBar.value++;
-        currentLoader.innerText = `Normalizing paths ${progressBar.value} / ${knownMods.size}`;
+        $oneLoaderGui.inc();
         for (let file of v.files) {
             file.injectionPoint = file.injectionPoint.replace(/\\/g, "/");
             file.injectionPoint = file.injectionPoint.replace(/^\/+/, "");
@@ -103,14 +94,13 @@ async function _modloader_stage2(knownMods) {
     });
 
     window._logLine("Looking for conflicted files");
-    progressBar.value = 0;
+
+    $oneLoaderGui.setHt("Looking for conflicted files");
     
     let conflictFiles = new Map();
     let deltaFiles = new Map();
 
     knownMods.forEach(function(v, k) {
-        progressBar.value++;
-        currentLoader.innerText = `Looking for protected files ${progressBar.value} / ${knownMods.size}`;
         let nf = [];
         for (let file of v.files) {
             if (PROTECTED_FILES.includes(file.injectionPoint)) {
@@ -119,7 +109,6 @@ async function _modloader_stage2(knownMods) {
             nf.push(file);
         }
         v.files = nf;
-        currentLoader.innerText = `Looking for conflicted files ${progressBar.value} / ${knownMods.size}`;
         for (let file of v.files) {
             if (!file.ogName) {
                 throw new Error("An error occured during early loading. Please report the error to Rph. Error Code: NO_OG_NAME");
@@ -163,8 +152,7 @@ async function _modloader_stage2(knownMods) {
         }
     });
 
-    progressBar.removeAttribute("value");
-    currentLoader.innerText = "Resolving conflicts";
+    $oneLoaderGui.setHt("Resolving conflicts");
 
     if (!$modLoader.config._conflictResolutions) {
         $modLoader.config._conflictResolutions = {};
@@ -242,17 +230,18 @@ async function _modloader_stage2(knownMods) {
     $modLoader.syncConfig();
 
     window._logLine("Building overlayFS image");
-    currentLoader.innerText = "Building base overlay"
-    progressBar.max = conflictFiles.size;
-    progressBar.value = 0;
+
+    $oneLoaderGui.setHt("Building base overlay");
+    $oneLoaderGui.setPbMax(conflictFiles.size);
+    $oneLoaderGui.setPbCurr(0);
     
     let overlayFS = {};
 
 
     for (let k of conflictFiles.keys()) {
-        progressBar.value++;
+        $oneLoaderGui.inc();
         let file = conflictFiles.get(k)[0].file;
-        if (progressBar.value % 500 === 0) await rafResolve();
+        if ($oneLoaderGui.pbCurr % 500 === 0) await rafResolve();
 
         let oDeep = _ensure_overlay_path(overlayFS, file.injectionPoint);
         let bruh = _overlay_fs_split_path(file.injectionPoint);
@@ -261,13 +250,14 @@ async function _modloader_stage2(knownMods) {
     }
 
     window._logLine("Applying delta patches");
-    currentLoader.innerText = "Delta patching"
-    progressBar.max = deltaFiles.size;
-    progressBar.value = 0;
+
+    $oneLoaderGui.setHt("Delta patching");
+    $oneLoaderGui.setPbMax(deltaFiles.size);
+    $oneLoaderGui.setPbCurr(0);
     
     let deltaSkip = [];
     for (let k of deltaFiles.keys()) {
-        progressBar.value++;
+        $oneLoaderGui.inc();
         try {
             window._logLine("Delta patching: " + k);
             window._logLine("| Reading base from the game");
@@ -353,6 +343,4 @@ async function _modloader_stage2(knownMods) {
     window.$modLoader.overlayFS = overlayFS;
 
     if (global && global.gc) global.gc();
-    progressBar.remove();
-    currentLoader.remove();
 }
