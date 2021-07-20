@@ -63,4 +63,6 @@ async function _start_game() {
     await $modLoader.$runScripts("pre_window_onload", {});
 
     window.onload();
+
+    $oneLoaderGui.container.style.opacity = 0;
 }
