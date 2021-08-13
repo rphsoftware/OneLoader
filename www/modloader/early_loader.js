@@ -355,20 +355,26 @@
         get type() { return "Unimplemented"; }
         get entry() { return {}; }
         async locateModJson(base = "/", crashOnFail = true) {
-            let entries = await this.readDir(base);
-            if (entries.includes("mod.json")) {
-                this.rootPath = base;
-                return true;
-            }
-            for (let entry of entries) {
-                if (this.isDir(path.join(base + entry))) {
-                    if (await this.locateModJson(path.join(base + entry), false)) {
-                        return true;
+            try {
+                let entries = await this.readDir(base);
+                if (entries.includes("mod.json")) {
+                    this.rootPath = base;
+                    return true;
+                }
+                for (let entry of entries) {
+                    if (this.isDir(path.join(base + entry))) {
+                        if (await this.locateModJson(path.join(base + entry), false)) {
+                            return true;
+                        }
                     }
                 }
+                if (crashOnFail) throw new Error("Unable to find mod.json");
+                else return false;
+            } catch(e) {
+                $modLoader.$log(e.message);
+                if (crashOnFail) throw new Error("Unable to find mod.json");
+                else return false;
             }
-            if (crashOnFail) throw new Error("Unable to find mod.json");
-            else return false;
         }
         async readModJson() {
             let modJson = await this.readFile(path.join(this.rootPath, "mod.json"));
