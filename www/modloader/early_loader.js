@@ -155,6 +155,7 @@
             this.files = [];
             this.plugins = [];
             this.pluginsDelta = [];
+            this.imageDelta = [];
             this.start();
         }
         start() {}
@@ -291,6 +292,33 @@
                 }
             }
         }
+
+        async processImageDeltaEntry(target, file) {
+            this.imageDelta.push({
+                target,
+                path: file,
+                file: await this.resolveDataSource(file)
+            });
+        }
+
+        async processImageDeltas() {
+            if (this.json.image_deltas) {
+                for (let {patch: target, with: file, dir} of this.json.image_deltas) {
+                    if (!dir) await this.processImageDeltaEntry(target, file);
+                    else {
+                        let files = await this.readDir(file);
+                        for (let f of files) {
+                            await this.processImageDeltaEntry(
+                                `${target}${f.replace(/\.olid$/, '.png')}`,
+                                `${file}${f}`);
+                        }
+                    }
+                }
+            } else {
+                $modLoader.$log(`${this.json.id} requested olid patching but no olid declarations were found`);
+            }
+        }
+
         async processV1Mod() {
             await this.processAsyncExecV1();
             if (this.json.files.assets) {
@@ -301,6 +329,10 @@
             });
             for (let rule of DATA_RULES) {
                 await this.processDataRulesV1(rule);
+            }
+            console.log(this.json._flags);
+            if (this.json._flags.includes("do_olid")) {
+                await this.processImageDeltas();
             }
             await $modLoader.$runScripts("when_discovered_3", {
                 mod: this
@@ -453,7 +485,8 @@
                 json: this.json,
                 files: this.files,
                 plugins: this.plugins,
-                pluginsDelta: this.pluginsDelta
+                pluginsDelta: this.pluginsDelta,
+                imageDelta: this.imageDelta
             };
         }
     }
@@ -494,7 +527,8 @@
                 json: this.json,
                 files: this.files,
                 plugins: this.plugins,
-                pluginsDelta: this.pluginsDelta
+                pluginsDelta: this.pluginsDelta,
+                imageDelta: this.imageDelta
             };
         }
     }
@@ -570,6 +604,9 @@
             $modLoader.syncConfig();
         }
 
+        $oneLoaderGui.setHt("Loading wasm");
+
+        await wasm_bindgen("./modloader/imagediff2_bg.wasm");
 
         $oneLoaderGui.setHt("Inspecting mods");
 

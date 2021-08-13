@@ -336,11 +336,14 @@ async function _modloader_stage2(knownMods) {
         alert("Please note that SOME patching was skipped due to errors. The following files will remain vanilla: " + deltaSkip.map(a => a[1]).join(",") +"\nError detalis can be found in latest.log");
     }
 
+    window.$modLoader.overlayFS = overlayFS;
+
+    await __modloader_image_delta(knownMods);
+
     await $modLoader.$runScripts("post_stage_2", {
         knownMods, $modLoader, overlayFS, deltaSkip, conflictFiles, deltaFiles
     });
 
-    window.$modLoader.overlayFS = overlayFS;
 
     if (global && global.gc) global.gc();
 }

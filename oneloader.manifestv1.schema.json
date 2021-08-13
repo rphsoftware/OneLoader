@@ -27,6 +27,28 @@
             "minimum":1,
             "maximum":1
         },
+        "image_deltas":{
+            "type":"array",
+            "description":"List of image delta rules",
+            "items":{
+                "type":"object",
+                "properties": {
+                    "patch": {
+                        "type":"string",
+                        "description":"Original file with png extension"
+                    },
+                    "with": {
+                        "type":"string",
+                        "description":"Path to olid in mod"
+                    },
+                    "dir": {
+                        "optional":true,
+                        "type":"boolean",
+                        "description":"Should dir mode be used instead"
+                    }
+                }
+            }
+        },
         "files":{
             "description":"Which files this mod patches",
             "type":"object",
