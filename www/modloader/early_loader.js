@@ -306,7 +306,7 @@
                 for (let {patch: target, with: file, dir} of this.json.image_deltas) {
                     if (!dir) await this.processImageDeltaEntry(target, file);
                     else {
-                        let files = await this.readDir(file);
+                        let files = await this.filesInDir(file);
                         for (let f of files) {
                             await this.processImageDeltaEntry(
                                 `${target}${f.replace(/\.olid$/, '.png')}`,
