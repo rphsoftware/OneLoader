@@ -21,5 +21,21 @@
                 window._logLine("[PLUGIN_LOADER] Injected " + name);
             }
         }
+
+        $modLoader.knownMods.forEach(mod => {
+            if (mod.json.plugin_parameters) {
+                for (let plugin in mod.json.plugin_parameters) {
+                    let filtered = $plugins.filter(a => a.name === plugin);
+
+                    if (filtered.length < 1) {
+                        window._logLine("[PLUGIN PARAMETER PATCHER] Ignored " + plugin + " from  " + mod.json.id + " because no such plugin was found in the game");
+                        continue;
+                    }
+
+                    let pluginObject = filtered[0];
+                    pluginObject.parameters = jsonpatch.applyPatch(pluginObject.parameters, mod.json.plugin_parameters[plugin]).newDocument;
+                }
+            }
+        });
     }
 }

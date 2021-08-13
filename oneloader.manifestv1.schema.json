@@ -49,6 +49,10 @@
                 }
             }
         },
+        "plugin_parameters": {
+            "type":"object",
+            "description":"List of deltas for plugin parameters"
+        },
         "files":{
             "description":"Which files this mod patches",
             "type":"object",
