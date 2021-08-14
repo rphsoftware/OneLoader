@@ -2,6 +2,7 @@
     This file is part of the OneLoader project and is licensed under the same terms (MIT)
 */
 {
+    let spainMode = false;
     class OneLoaderWindowBase extends Window_Selectable {
         initialize() {
             // Make Options List
@@ -189,6 +190,7 @@
             }
         }
     }
+
     class OneLoaderModList extends OneLoaderWindowBase {
         constructor() { super(...arguments); }
 
@@ -674,18 +676,20 @@ ${JSON.stringify(plugins, null, 2)}`);
     window.Scene_OmoMenuOptions = class Scene_OmoMenuOptions extends _injection_point_scene_menuoptions {
         createSystemOptionsWindow() {
             super.createSystemOptionsWindow();
-            this._oneLoaderWindow = new OneLoaderOptionsWindow();
-            this._oneLoaderWindow.setHandler('cancel', this.onOptionWindowCancel.bind(this));
-            this._oneLoaderWindow.deactivate();
-            this._oneLoaderWindow.passHelpWindow(this._helpWindow);
-            this._oneLoaderWindow.visible = false;
-            this._oneLoaderWindow.height = 0;
-            this._oneLoaderWindow.x = 10;
-            this.addChild(this._oneLoaderWindow);
+            if (!spainMode) {
+                this._oneLoaderWindow = new OneLoaderOptionsWindow();
+                this._oneLoaderWindow.setHandler('cancel', this.onOptionWindowCancel.bind(this));
+                this._oneLoaderWindow.deactivate();
+                this._oneLoaderWindow.passHelpWindow(this._helpWindow);
+                this._oneLoaderWindow.visible = false;
+                this._oneLoaderWindow.height = 0;
+                this._oneLoaderWindow.x = 10;
+                this.addChild(this._oneLoaderWindow);
+            }
         }
         optionWindows() {
             let a = super.optionWindows();
-            a.push(this._oneLoaderWindow);
+            if (!spainMode) a.push(this._oneLoaderWindow);
             return a;
         }
     }
@@ -698,4 +702,11 @@ ${JSON.stringify(plugins, null, 2)}`);
         }
         maxCols() { return super.maxCols() + 1; }
     }
+
+    window.Window_OmoMenuOptionsMods = new Proxy(OneLoaderOptionsWindow, {
+        construct(target, args, newTarget) {
+            spainMode = true;
+            return Reflect.construct(target, args, newTarget);
+        }
+    });
 }
