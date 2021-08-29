@@ -28,6 +28,10 @@
         {
             "file":"oneloader-update-installer.js",
             "runat":"pre_stage_2"
+        },
+        {
+            "file":"oneloader-icon-handler.js",
+            "runat":"pre_stage_2"
         }
     ]
 }

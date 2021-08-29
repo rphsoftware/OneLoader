@@ -492,7 +492,8 @@
                 files: this.files,
                 plugins: this.plugins,
                 pluginsDelta: this.pluginsDelta,
-                imageDelta: this.imageDelta
+                imageDelta: this.imageDelta,
+                _raw: this
             };
         }
     }
@@ -534,7 +535,8 @@
                 files: this.files,
                 plugins: this.plugins,
                 pluginsDelta: this.pluginsDelta,
-                imageDelta: this.imageDelta
+                imageDelta: this.imageDelta,
+                _raw: this
             };
         }
     }
