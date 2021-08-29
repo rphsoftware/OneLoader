@@ -13,7 +13,7 @@ if (!fs.existsSync(path.join(base, "icon", "icon-oneloader-backup.png"))) {
 let ki = [];
 for (let [key, value] of params.knownMods.entries()) {
     if (value.json.game_icon) {
-        ki.push(await value._raw.readFile(value.json.game_icon));
+        ki.push(await _read_file(await value._raw.resolveDataSource(value.json.game_icon)));
     }
 }
 
