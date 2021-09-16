@@ -10,19 +10,8 @@ This project contains in part or in full the following projects:
 
 Additionally, I'd like to thank the developers of GOMORI for kick-starting the modding community and laying the necessary ground work for modloader development.
 
-## Installation
-### New users:
-- Download the latest release from the github releases panel (Or [click here](https://github.com/rphsoftware/OneLoader/releases/latest))
-- From the downloaded zip, extract the `www` folder into the main folder of the game (For instance `C:\Program Files (x86)\Steam\steamapps\common\OMORI`)
-- You should get prompted to replace the index.html file in the game folder. Select yes, that's needed to get the modloader working.
-- Run the game once so that the modloader can create all the required files and folders.
-- After closing the game, go to the following folder in the games directory structure: `www\mods` (If it's not present, make it) and drop in your mod folders and zips (You can download mod zips either from [mods.one](https://mods.one) or the #modding-showcase channel on the [OMORI discord](https://discord.gg/omori))
-
-### GOMORI users:
-- Follow the instructions for new users. You do not need to remove gomori, OneLoader will handle it for you.
-- It's recommended you temporarily remove all your mods from the mods folder and run the game cleanly once to allow the modloader to restore and create required files.
-- Re-add your mods. **NOTE:** If you keep the `gomori` mod installed, you will see a bogus gomori version on the title screen. It's safe to remove that mod.
-- In case anything is broken, or your GOMORI installation had troubles beforehand, you can always re-verify game integrity using Steam and re-install the mod loader according to new user instructions.
+## Installation:
+Please reference the [mods.one modding wiki](https://omori.wiki.mods.one/installing_oneloader) for instructions on how to install
 
 ## Making mods
 Because this modloader aims to be a drop-in GOMORI replacement, you can follow mod making instructions from the [GOMORI repository](https://github.com/gilbert142/gomori). As more features are added to OneLoader that GOMORI doesn't implement, they will be implemented here.
