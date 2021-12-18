@@ -86,13 +86,14 @@ async function __modloader_image_delta(knownMods) {
 
         if (deltas.length < 1) continue;
 
+        const image_data = _modloader_encryption.decryptAsset(await _vfs_resolve_file(image.replace(/\.png$/g, '.rpgmvp')));
+        
+        job_id = `${job_id}+${shaDigest(image_data)}`;
         job_id = `${job_id}:${deltas.sort((a, b) => {return a.salt > b.salt?1:-1}).map(a => a.salt).join(":")}`;
         job_id = shaDigest(job_id);
 
         if (!native_fs.existsSync(path.join(cache_base, `${job_id}.png`))) {
             // Load initial file
-            const image_data = _modloader_encryption.decryptAsset(await _vfs_resolve_file(image.replace(/\.png$/g, '.rpgmvp')));
-            
             const sourceURL = URL.createObjectURL(new Blob([image_data], {type: 'image/png'}));
             const sourceImg = await new Promise(resolve => {const img = new Image();img.onload = () => resolve(img);img.src = sourceURL;});
             URL.revokeObjectURL(sourceURL);
