@@ -32,6 +32,10 @@
                     children: {}
                 };
             }
+            if (!overlay[component].children) {
+                window._logLine("[BUG!] Children didn't exist for " + path + ", creating.");
+                overlay[component].children = {};
+            }
             overlay = overlay[component].children;
         }
 
