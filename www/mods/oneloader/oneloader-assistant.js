@@ -118,10 +118,10 @@
             super.cursorRight(wrap);
             var data = this._optionsList[this.index()];
             // Get Data
-            if(this.index() === 0 && !Graphics._isFullScreen()) {
-                SoundManager.playBuzzer();
-                return;
-            } 
+           // if(this.index() === 0 && !Graphics._isFullScreen()) {
+           //     SoundManager.playBuzzer();
+           //     return;
+           // } 
             if (data) {
                 // Set Data Index
                 data.index = (data.index + 1) % data.options.length;
@@ -135,10 +135,10 @@
             super.cursorLeft(wrap);
             var data = this._optionsList[this.index()];
             // Get Data
-            if(this.index() === 0 && !Graphics._isFullScreen()) {
-                SoundManager.playBuzzer();
-                return;
-            } 
+           // if(this.index() === 0 && !Graphics._isFullScreen()) {
+            //    SoundManager.playBuzzer();
+            //    return;
+            //} 
             if (data) {
                 // Get Max Items
                 var maxItems = data.options.length;
