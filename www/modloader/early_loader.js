@@ -773,7 +773,7 @@
 
         window._logLine("Starting game");
 
-        $modLoader.$runScripts("pre_game_start", {});
+        await $modLoader.$runScripts("pre_game_start", {});
 
         await _start_game();
     };
