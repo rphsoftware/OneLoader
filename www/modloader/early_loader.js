@@ -228,44 +228,48 @@
             for (let entry of Array.from(allEntries)) {
                 let f = await this.processListEntryV1(entry);
                 for (let {base, file: oogName} of f) {
-                    let extension = "";
-                    let ogName = oogName;
-                    let fileName = oogName.toLowerCase();
                     try {
-                        extension = ogName.match(/.([^\.]*$)/)[1].toLowerCase();
-                    } catch(e) {}
-                    if (pluginList && this.json._flags.includes("randomize_plugin_name")) {
-                        let rs = randomString();
-                        fileName = rs + "." + extension;
-                        ogName = rs + "." + extension;
-                    }
-                    if (formatMap[extension]) {
-                        let format = formatMap[extension];
-                        let fileData = {
-                            injectionPoint: mountPoint + "/" + fileName.replace(new RegExp(extension + "$"), format.target),
-                            ogName: ogName.replace(new RegExp(extension + "$", "i"), format.target),
-                            mode: format.encrypt ? "steam" : "pass",
-                            dataSource: await this.resolveDataSource(path.join(base, oogName)),
-                            delta: format.delta
-                        };
-                        if (fileData.delta) {
-                            fileData.delta_method = format.delta_method;
+                        let extension = "";
+                        let ogName = oogName;
+                        let fileName = oogName.toLowerCase();
+                        try {
+                            extension = ogName.match(/.([^\.]*$)/)[1].toLowerCase();
+                        } catch(e) {}
+                        if (pluginList && this.json._flags.includes("randomize_plugin_name")) {
+                            let rs = randomString();
+                            fileName = rs + "." + extension;
+                            ogName = rs + "." + extension;
                         }
-                        if (doneEntries.has(fileData.injectionPoint)) {
-                            $modLoader.$log(`${this.json.id} + ${mountPoint} + ${entry} | ${fileData.injectionPoint} can't be patched twice`);
-                            continue;
-                        }
-                        doneEntries.add(fileData.injectionPoint);
-                        if (pluginList) {
-                            if (format.delta) {
-                                this.pluginsDelta.push(fileData.injectionPoint);
-                            } else {
-                                this.plugins.push(fileData.injectionPoint);
+                        if (formatMap[extension]) {
+                            let format = formatMap[extension];
+                            let fileData = {
+                                injectionPoint: mountPoint + "/" + fileName.replace(new RegExp(extension + "$"), format.target),
+                                ogName: ogName.replace(new RegExp(extension + "$", "i"), format.target),
+                                mode: format.encrypt ? "steam" : "pass",
+                                dataSource: await this.resolveDataSource(path.join(base, oogName)),
+                                delta: format.delta
+                            };
+                            if (fileData.delta) {
+                                fileData.delta_method = format.delta_method;
                             }
+                            if (doneEntries.has(fileData.injectionPoint)) {
+                                $modLoader.$log(`${this.json.id} + ${mountPoint} + ${entry} | ${fileData.injectionPoint} can't be patched twice`);
+                                continue;
+                            }
+                            doneEntries.add(fileData.injectionPoint);
+                            if (pluginList) {
+                                if (format.delta) {
+                                    this.pluginsDelta.push(fileData.injectionPoint);
+                                } else {
+                                    this.plugins.push(fileData.injectionPoint);
+                                }
+                            }
+                            this.files.push(fileData);
+                        } else {
+                            $modLoader.$log(`${this.json.id} + ${mountPoint} + ${entry} | ${oogName} skipped, unknown extension`)
                         }
-                        this.files.push(fileData);
-                    } else {
-                        $modLoader.$log(`${this.json.id} + ${mountPoint} + ${entry} | ${oogName} skipped, unknown extension`)
+                    } catch(e) {
+                        $modLoader.$log(`[WARN] Failed to resolve ${base} ${oogName} when processing ${this.json.id}`)
                     }
                 }
             }
@@ -465,6 +469,7 @@
             sPath = sPath.replace(/\\/g,"/");
             let cleanupRegexps = [/$^/,/^\//,/^\/|\/$/g,/\/$/];
             let addSlashRegexps = [/$^/, /^/, /$/, /^|$/g];
+            $modLoader.$log("ZIPMOD, _resolveEntry: " + sPath)
             for (let a of cleanupRegexps) {
                 for (let b of addSlashRegexps) {
                     let aa = new RegExp(a.source,a.flags);
