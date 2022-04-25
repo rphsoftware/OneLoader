@@ -46,18 +46,3 @@ If you encounter any issue or bug, please open a github issue in this repository
 
 ## Get in touch with the developer
 You can reach me via Discord through DMs ( Rph#9999 is my tag ), via the [OMORI discord](https://discord.gg/omori) (Simply tag me in modding-discussion) or via the [mods.one discord](https://discord.gg/EDTMF85Hnp)
-
-### Roadmap:
-- [x] Preview 1 (We are here)
-
-- [X] Preview 2 
-  - [X] In-game mod manager akin to that of gomori
-  - [X] Functionalities of the PlaytestMaker built-in to the in-game helper mod
-
-- [X] Preview 3
-  - [X] Replacement for the exec field (most likely `asyncExec`)
-  - [ ] Bug fixes
-
-- [ ] Full release v1.0.0
-  - [ ] Improvements to the loading UI
-  - [ ] More bug fixes
