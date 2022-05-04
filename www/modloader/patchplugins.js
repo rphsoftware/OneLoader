@@ -25,7 +25,7 @@
         $modLoader.knownMods.forEach(mod => {
             if (mod.json.plugin_parameters) {
                 for (let plugin in mod.json.plugin_parameters) {
-                    let filtered = $plugins.filter(a => a.name === plugin);
+                    let filtered = $plugins.filter(a => a.name.toLowerCase() === plugin.toLowerCase());
 
                     if (filtered.length < 1) {
                         window._logLine("[PLUGIN PARAMETER PATCHER] Ignored " + plugin + " from  " + mod.json.id + " because no such plugin was found in the game");
