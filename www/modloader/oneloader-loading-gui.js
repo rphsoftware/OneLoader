@@ -1,22 +1,22 @@
 window.$oneLoaderGui = new (class OneLoaderGui {
     constructor() {
         this.container = document.createElement("div");
-        this.container.style = "width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;";
+        this.container.style = "background-color: hsla(0, 0%, 11%, 1); width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;";
         requestAnimationFrame(() => { this.tryMount(); });
 
         this.heading = document.createElement("h1");
-        this.heading.style = "position: absolute; top: 0; left:0; right: 0; background: linear-gradient(hsl(230, 85%, 35%), hsl(200, 85%, 35%)); margin: 0; font-family: Helvetica; font-size: 24px; color: white; line-height: 48px; border-bottom: 4px solid hsl(200, 85%, 35%); padding-left: 4px;";
+        this.heading.style = "position: absolute; top: 0; left:0; right: 0; background-color: hsla(0, 0%, 19%, 1); font-weight: 100; margin: 0; font-family: Trebuchet MS; font-size: 24px; color: white; line-height: 48px; padding-left: 4px; text-align: center";
         this.heading.innerText = "OneLoader";
 
         this.statusText = document.createElement("code");
         this.statusText.style = "position: absolute; bottom: 0; left: 0; font-size: 16px; color: white; line-height: 24px;";
-        this.statusText.innerText = "Preparing";
+        this.statusText.innerText = "Preparing...";
 
         this.stt = new Set();
 
         this.progressInfoText = document.createElement("h1");
-        this.progressInfoText.style = "color: white; font-family: Helvetica; font-weight: 900; margin: 0;";
-        this.progressInfoText.innerText = "Preparing";
+        this.progressInfoText.style = "color: white; font-family: Helvetica; font-weight: 500; margin: 0;";
+        this.progressInfoText.innerText = "Preparing...";
 
         this.progress = document.createElement("div");
         this.progress.style = "overflow: hidden; width: 480px; background: #333; height: 16px; position: relative;";
