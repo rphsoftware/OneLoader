@@ -707,9 +707,44 @@
             let exclusions = new Map();
             let requirements = new Map();
 
+            let satisfaction = new Map();
+            let skipChecks = new Map();
+
+            for (let [id, {json}] of knownMods.entries()) {
+                if(!satisfaction.has(id.toLowerCase())) {
+                    satisfaction.set(id.toLowerCase(), []);
+                }
+                satisfaction.get(id.toLowerCase()).push(json.name);
+                if (json.satisfies) {
+                    for (let s of json.satisfies) {
+                        if(!satisfaction.has(s.toLowerCase())) {
+                            satisfaction.set(s.toLowerCase(), []);
+                        }
+                        satisfaction.get(s.toLowerCase()).push(json.name);
+                    }
+                }
+
+                if (json.skip_checks) {
+                    for (let victimMod in json.skip_checks) {
+                        if (!skipChecks.has(victimMod.toLowerCase()))
+                            skipChecks.set(victimMod.toLowerCase(), new Set());
+                        
+                        for (let skippable of json.skip_checks[victimMod])
+                            skipChecks.get(victimMod.toLowerCase()).add(skippable.toLowerCase());
+                    }
+                }
+            }
+
+            console.log(satisfaction);
+
             for (let mod of knownMods.values()) {
+                if (!skipChecks.has(mod.json.id.toLowerCase()))
+                    skipChecks.set(mod.json.id.toLowerCase(), new Set());
+
+                let skips = skipChecks.get(mod.json.id.toLowerCase());
                 if (mod.json.excludes) {
                     for (let exclude of mod.json.excludes) {
+                        if (skips.has(exclude.toLowerCase())) continue;
                         if (exclusions.has(exclude.toLowerCase())) {
                             exclusions.get(exclude.toLowerCase()).push(mod.json.name);
                         } else {
@@ -719,6 +754,7 @@
                 }
                 if (mod.json.requires) {
                     for (let req of mod.json.requires) {
+                        if (skips.has(req.toLowerCase())) continue;
                         if (requirements.has(req.toLowerCase())) {
                             requirements.get(req.toLowerCase()).push(mod.json.name);
                         } else {
@@ -732,13 +768,13 @@
             let requirementFailures = [];
 
             for (let [key, value] of exclusions.entries()) {
-                if (Array.from(knownMods.keys()).map(a=>a.toLowerCase()).includes(key)) {
-                    exclusionFailures.push(`${Array.from(knownMods.entries()).find(a => a[0].toLowerCase() === key)[1].json.name} is excluded by ${value.join(", ")}`);
+                if (satisfaction.has(key)) {
+                    exclusionFailures.push(`${satisfaction.get(key).join(", ")} ${satisfaction.get(key).length > 1 ? "are" : "is"} excluded by ${value.join(", ")}`);
                 }
             }
 
             for (let [key, value] of requirements.entries()) {
-                if (!Array.from(knownMods.keys()).map(a=>a.toLowerCase()).includes(key)) {
+                if (!satisfaction.has(key)) {
                     requirementFailures.push(`${value.join(", ")} require${value.length === 1 ? "s": ""} ${key} but it's not installed.`);
                 }
             }
