@@ -741,7 +741,20 @@
                 if (!skipChecks.has(mod.json.id.toLowerCase()))
                     skipChecks.set(mod.json.id.toLowerCase(), new Set());
 
-                let skips = skipChecks.get(mod.json.id.toLowerCase());
+                let skips = /* skipChecks.get(mod.json.id.toLowerCase()); */ new Set();
+                for (let a of skipChecks.get(mod.json.id.toLowerCase())) {
+                    skips.add(a);
+                }
+                if (mod.json.satisfies) {
+                    for (let innerSatisfaction of mod.json.satisfies) {
+                        if (!skipChecks.has(innerSatisfaction.toLowerCase()))
+                            skipChecks.set(innerSatisfaction.toLowerCase(), new Set());
+
+                        for (let a of skipChecks.get(innerSatisfaction.toLowerCase())) {
+                            skips.add(a);
+                        }  
+                    }
+                }
                 if (mod.json.excludes) {
                     for (let exclude of mod.json.excludes) {
                         if (skips.has(exclude.toLowerCase())) continue;
