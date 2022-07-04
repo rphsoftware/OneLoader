@@ -9,10 +9,8 @@ window.$oneLoaderGui = new (class OneLoaderGui {
         this.heading.innerText = "OneLoader";
 
         this.statusText = document.createElement("code");
-        this.statusText.style = "position: absolute; bottom: 0; left: 0; font-size: 16px; color: white; line-height: 24px;";
+        this.statusText.style = "font-size: 16px; color: white; line-height: 24px;";
         this.statusText.innerText = "Preparing";
-
-        this.stt = new Set();
 
         this.progressInfoText = document.createElement("h1");
         this.progressInfoText.style = "color: white; font-family: Helvetica; font-weight: 900; margin: 0;";
@@ -31,8 +29,8 @@ window.$oneLoaderGui = new (class OneLoaderGui {
 
         this.container.appendChild(this.progressInfoText);
         this.container.appendChild(this.heading);
-        this.container.appendChild(this.statusText);
         this.container.appendChild(this.progress);
+        this.container.appendChild(this.statusText);
     }
 
     redrawProgress() {
@@ -61,22 +59,7 @@ window.$oneLoaderGui = new (class OneLoaderGui {
     }
 
     pst(text) {
-        let descriptor = [this.statusText, 0];
-        this.stt.add(descriptor);
-        for (let a of Array.from(this.stt)) {
-            a[1] += 24;
-            a[0].style.bottom = `${a[1]}px`;
-        }
-
-        setTimeout(() => {
-            descriptor[0].remove();
-            this.stt.delete(descriptor);
-        }, 100);
-
-        this.statusText = document.createElement("code");
-        this.statusText.style = "position: absolute; bottom: 0; left: 0; font-size: 16px; color: white; line-height: 24px;";
         this.statusText.innerText = text;
-        this.container.appendChild(this.statusText);
     }
 
     tryMount() {

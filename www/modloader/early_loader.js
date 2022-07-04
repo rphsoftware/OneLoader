@@ -156,6 +156,7 @@
             this.plugins = [];
             this.pluginsDelta = [];
             this.imageDelta = [];
+            this.priority = 0;
             this.start();
         }
         start() {}
@@ -392,7 +393,12 @@
             if (!modJson._flags) modJson._flags = [];
             if (modJson.manifestVersion > MAX_MANIFEST_VERSION) throw new Error("ModLoader too old to load this mod");
 
+            if (modJson.priority) this.priority = parseInt(modJson.priority) || 0;
             this.json = modJson;
+
+            if (this.json.id === "oneloader") {
+                $oneLoaderGui.setVersionNumber(this.json.version);
+            }
         }
     }
 
@@ -695,6 +701,73 @@
         if (errorCount > 0) {
             alert("Early loading complete with " + errorCount + " errors. Please look into latest.log and searching for [ERROR] to identify what the erorrs were.");
         }
+
+        // process require/exclude
+        {
+            let exclusions = new Map();
+            let requirements = new Map();
+
+            for (let mod of knownMods.values()) {
+                if (mod.json.excludes) {
+                    for (let exclude of mod.json.excludes) {
+                        if (exclusions.has(exclude.toLowerCase())) {
+                            exclusions.get(exclude.toLowerCase()).push(mod.json.name);
+                        } else {
+                            exclusions.set(exclude.toLowerCase(), [mod.json.name]);
+                        }
+                    }
+                }
+                if (mod.json.requires) {
+                    for (let req of mod.json.requires) {
+                        if (requirements.has(req.toLowerCase())) {
+                            requirements.get(req.toLowerCase()).push(mod.json.name);
+                        } else {
+                            requirements.set(req.toLowerCase(), [mod.json.name]);
+                        }
+                    }
+                }
+            }
+
+            let exclusionFailures = [];
+            let requirementFailures = [];
+
+            for (let [key, value] of exclusions.entries()) {
+                if (Array.from(knownMods.keys()).map(a=>a.toLowerCase()).includes(key)) {
+                    exclusionFailures.push(`${Array.from(knownMods.entries()).find(a => a[0].toLowerCase() === key)[1].json.name} is excluded by ${value.join(", ")}`);
+                }
+            }
+
+            for (let [key, value] of requirements.entries()) {
+                if (!Array.from(knownMods.keys()).map(a=>a.toLowerCase()).includes(key)) {
+                    requirementFailures.push(`${value.join(", ")} require${value.length === 1 ? "s": ""} ${key} but it's not installed.`);
+                }
+            }
+
+            console.log(exclusionFailures, requirementFailures);
+            console.log(exclusions, requirements);
+
+            let message = "Some issues occured while checking mod requirements:\n";
+            let fucked = false;
+            if (exclusionFailures.length > 0) {
+                message = message +  "\n" + exclusionFailures.map(a => "- " + a).join("\n");
+                fucked = true;
+            }
+            if (requirementFailures.length > 0) {
+                message = message + "\n" + requirementFailures.map(a => "- " + a).join("\n");
+                fucked = true;
+            }
+
+
+            if (fucked) {
+                message = message + "\n\nAs a result, we will try to start the game in safe mode, with no mods loaded.";
+                alert(message);
+                window._logLine("The user is dumb and has mod conflicts. Everyone point and laugh. Anyway, we have to do the whole safe mode shit.");
+                _start_game();
+                return;
+            }
+        }
+        // end process require/exclude
+
         await _modloader_stage2(knownMods);
 
         window._logLine("Creating GOMORI API backwards compatibility");

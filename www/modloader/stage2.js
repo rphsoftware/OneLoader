@@ -59,6 +59,9 @@ async function _modloader_stage2(knownMods) {
          knownMods, $modLoader
     });
 
+    let sortedMods = Array.from(knownMods).sort((a,b)=>(a[1]._raw.priority - b[1]._raw.priority)).map(a=>a[1]);
+    console.log(sortedMods);
+
     const PROTECTED_FILES = [
         "js/libs/pixi.js",
         "js/libs/pixi-tilemap.js",
@@ -84,7 +87,7 @@ async function _modloader_stage2(knownMods) {
     $oneLoaderGui.setPbCurr(0);
 
     window._logLine("Normalizing injection paths");
-    knownMods.forEach(function(v, k) {
+    sortedMods.forEach(function(v) {
         $oneLoaderGui.inc();
         for (let file of v.files) {
             file.injectionPoint = file.injectionPoint.replace(/\\/g, "/");
@@ -100,7 +103,7 @@ async function _modloader_stage2(knownMods) {
     let conflictFiles = new Map();
     let deltaFiles = new Map();
 
-    knownMods.forEach(function(v, k) {
+    sortedMods.forEach(function(v) {
         let nf = [];
         for (let file of v.files) {
             if (PROTECTED_FILES.includes(file.injectionPoint)) {
