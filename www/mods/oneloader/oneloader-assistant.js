@@ -455,6 +455,9 @@ ${JSON.stringify(plugins, null, 2)}`);
             if (this.active) {
                 if (Input.isRepeated("ok")) {
                     if (this.index() === 2) {
+                        if ($modLoader.isInTestMode) {
+                            return alert("This does not work in Test Mode.");
+                        }
                         Input.clear();
                         this.deactivate();
                         processDecryption(this._optionsList[0].index, this._optionsList[1].index, `www_${ this._optionsList[1].index === 0 ? "playtest" : "decrypt" }_${randomString(4)}`).then(() => {
