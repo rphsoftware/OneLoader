@@ -62,6 +62,16 @@ async function _start_game() {
 
     await $modLoader.$runScripts("pre_window_onload", {});
 
+    if ($modLoader.isInTestMode) {
+        $oneLoaderGui.setHt("Playtest: Giving the game time to load plugins.");
+        $oneLoaderGui.setPbMax(5);
+        $oneLoaderGui.pst("Because of that, this loading screen WILL stutter. Have patience.");
+
+        for (let i = 0; i < 5; i++) {
+            await new Promise(r => setTimeout(r, 1000));
+            $oneLoaderGui.setPbCurr(i + 1);
+        }
+    }
     window.onload();
 
     $oneLoaderGui.container.style.opacity = 0;

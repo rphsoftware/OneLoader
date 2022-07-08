@@ -5,30 +5,59 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
         $modLoader.$vfsTrace("WEB REQUEST " + JSON.stringify(data));
         let url = new URL(data.request.url);
 
-        if (url.origin === window.location.origin && url.pathname.startsWith("/www/")) {
-            let vfsPath = url.pathname.replace(/^[\/\\]*www[\/\\]*/, "");
-            try {
-                let rdata = await _vfs_resolve_file(vfsPath);
-                let hS = "";
-                for (let header in data.responseHeaders) {
-                    hS = `${hS}${header}: ${data.responseHeaders[header]}\n`;
-                }
+        if ($modLoader.isInTestMode) {
+            if (url.origin === window.location.origin) {
+                let vfsPath = url.pathname;
+                try {
+                    let rdata = await _vfs_resolve_file(vfsPath);
+                    let hS = "";
+                    for (let header in data.responseHeaders) {
+                        hS = `${hS}${header}: ${data.responseHeaders[header]}\n`;
+                    }
 
-                let responseBody = `HTTP/1.1 200 OK\n${hS}\n`;
-                responseBody = Buffer.concat([Buffer.from(responseBody), rdata]).toString("base64");
-                return {
-                    interceptionId: data.interceptionId,
-                    rawResponse: responseBody
-                };
-            } catch(e) {
-                window._logLine("Error occured when building response body: " + e.stack);
+                    let responseBody = `HTTP/1.1 200 OK\n${hS}\n`;
+                    responseBody = Buffer.concat([Buffer.from(responseBody), rdata]).toString("base64");
+                    return {
+                        interceptionId: data.interceptionId,
+                        rawResponse: responseBody
+                    };
+                } catch(e) {
+                    window._logLine("Error occured when building response body: " + e.stack);
+                    return {
+                        interceptionId: data.interceptionId
+                    }
+                }
+            } else {
                 return {
                     interceptionId: data.interceptionId
                 }
             }
         } else {
-            return {
-                interceptionId: data.interceptionId
+            if (url.origin === window.location.origin && url.pathname.startsWith("/www/")) {
+                let vfsPath = url.pathname.replace(/^[\/\\]*www[\/\\]*/, "");
+                try {
+                    let rdata = await _vfs_resolve_file(vfsPath);
+                    let hS = "";
+                    for (let header in data.responseHeaders) {
+                        hS = `${hS}${header}: ${data.responseHeaders[header]}\n`;
+                    }
+
+                    let responseBody = `HTTP/1.1 200 OK\n${hS}\n`;
+                    responseBody = Buffer.concat([Buffer.from(responseBody), rdata]).toString("base64");
+                    return {
+                        interceptionId: data.interceptionId,
+                        rawResponse: responseBody
+                    };
+                } catch(e) {
+                    window._logLine("Error occured when building response body: " + e.stack);
+                    return {
+                        interceptionId: data.interceptionId
+                    }
+                }
+            } else {
+                return {
+                    interceptionId: data.interceptionId
+                }
             }
         }
     }
@@ -54,19 +83,35 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
                             chrome.debugger.sendCommand(debugee, "Network.continueInterceptedRequest", await buildResponseBody(data));
                         }
                     });
-                    chrome.debugger.sendCommand( 
-                        debugee, 
-                        "Network.setRequestInterception", 
-                        {
-                            enabled: true, 
-                            patterns: [ 
-                                {
-                                    urlPattern: window.location.origin + "/www/*",
-                                    interceptionStage: "HeadersReceived"
-                                }
-                            ]
-                        }
-                    );
+                    if (!$modLoader.isInTestMode) {
+                        chrome.debugger.sendCommand( 
+                            debugee, 
+                            "Network.setRequestInterception", 
+                            {
+                                enabled: true, 
+                                patterns: [ 
+                                    {
+                                        urlPattern: window.location.origin + "/www/*",
+                                        interceptionStage: "HeadersReceived"
+                                    }
+                                ]
+                            }
+                        );
+                    } else {
+                        chrome.debugger.sendCommand( 
+                            debugee, 
+                            "Network.setRequestInterception", 
+                            {
+                                enabled: true, 
+                                patterns: [ 
+                                    {
+                                        urlPattern: window.location.origin + "/*",
+                                        interceptionStage: "HeadersReceived"
+                                    }
+                                ]
+                            }
+                        );
+                    }
 
                     setTimeout(resolve, 100);
                 });
