@@ -1,67 +1,7 @@
 (function b(){
     window._logLine("-=-=-= Early loader =-=-=-");
 
-    const MAX_MANIFEST_VERSION = 1;
-    const ID_BLACKLIST = ["gomori"];
-    const EXTENSION_RULES = {
-        "png":{"encrypt":"rpgmaker", "target_extension":"rpgmvp"},
-        "ogg":{"encrypt":"rpgmaker", "target_extension":"rpgmvo"}
-    };
-
-    const DATA_RULES = [
-        {
-            jsonKeys: [
-                "data", "data_delta", "data_pluto","data_pluto_delta"
-            ],
-            formatMap: {
-                "json":{target: "KEL", delta: false, encrypt: true},
-                "jsond":{target: "KEL", delta: true,delta_method:"json", encrypt: true},
-                "kel":{target:"KEL", delta: false, encrypt: false},
-                "yml":{target:"PLUTO",delta:false, encrypt: true},
-                "ymld":{target:"PLUTO",delta:true,delta_method:"yaml", encrypt: true},
-                "yaml":{target:"PLUTO", delta:false, encrypt: true},
-                "yamld":{target:"PLUTO",delta:true,delta_method:"yaml", encrypt: true},
-                "pluto":{target:"PLUTO", delta: false, encrypt: false}
-            },
-            mountPoint: "data"
-        },
-        {
-            jsonKeys: [
-                "text", "text_delta"
-            ],
-            formatMap: {
-                "yml":{target:"HERO",delta:false, encrypt: true},
-                "ymld":{target:"HERO",delta:true,delta_method:"yaml", encrypt: true},
-                "yaml":{target:"HERO", delta:false, encrypt: true},
-                "yamld":{target:"HERO",delta:true,delta_method:"yaml", encrypt: true},
-                "hero":{target:"HERO",delta:false,encrypt:false}
-            },
-            mountPoint: "languages/en"
-        },
-        {
-            jsonKeys: [
-                "maps","maps_delta"
-            ],
-            formatMap: {
-                "json":{target: "AUBREY", delta: false, encrypt: true},
-                "jsond":{target: "AUBREY", delta: true,delta_method:"json", encrypt: true},
-                "aubrey":{target:"AUBREY",delta:false,encrypt:false}
-            },
-            mountPoint: "maps"
-        },
-        {
-            jsonKeys: [
-                "plugins","plugins_delta"
-            ],
-            formatMap: {
-                "js":{target:"OMORI",delta:false,encrypt:true},
-                "jsd":{target:"OMORI",delta:true,delta_method:"append",encrypt:true},
-                "omori":{target:"OMORI",delta:false,encrypt:false}
-            },
-            mountPoint: "js/plugins",
-            pluginList: true
-        }
-    ];
+    const { MAX_MANIFEST_VERSION, ID_BLACKLIST, EXTENSION_RULES, DATA_RULES } = $ONELOADER_CONFIG;
 
     const StreamZip = require('./modloader/node_stream_zip.js');
     const native_fs = require('fs');
@@ -123,7 +63,8 @@
                 window._logLine("[TRACING] " + message);
             }
         },
-        $nwMajor: parseInt(process.versions.nw.match(/^\d*\.(\d*)\.\d*$/)[1])
+        $nwMajor: parseInt(process.versions.nw.match(/^\d*\.(\d*)\.\d*$/)[1]),
+        isInTestMode: window.nw.App.argv[0] === "test"
     }; // BaseModLoader object
 
     /* Install the argv handler and shadow the true argv object to allow the base game to work normally */ { 
@@ -902,6 +843,7 @@
 
         await $modLoader.$runScripts("pre_game_start", {});
 
+        debugger;
         await _start_game();
     };
 
