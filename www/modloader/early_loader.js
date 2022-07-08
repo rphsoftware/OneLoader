@@ -710,7 +710,11 @@
             let satisfaction = new Map();
             let skipChecks = new Map();
 
+            window._logLine("Starting compatiblity check block");
+
             for (let [id, {json}] of knownMods.entries()) {
+                window._logLine("Performing satisfaction and skip check building for " + id);
+
                 if(!satisfaction.has(id.toLowerCase())) {
                     satisfaction.set(id.toLowerCase(), []);
                 }
@@ -735,9 +739,12 @@
                 }
             }
 
-            console.log(satisfaction);
+            window._logLine("Satisfaction: " + JSON.stringify(Array.from(satisfaction.entries())));
+            window._logLine("SkipChecks: " + JSON.stringify(Array.from(skipChecks.entries())));
 
             for (let mod of knownMods.values()) {
+
+                window._logLine("Starting real building of exclusion and inclusion maps. Mod: " + mod.json.id);
                 if (!skipChecks.has(mod.json.id.toLowerCase()))
                     skipChecks.set(mod.json.id.toLowerCase(), new Set());
 
@@ -755,9 +762,15 @@
                         }  
                     }
                 }
+
+                window._logLine("Skips for " + mod.json.id + " are: " + JSON.stringify(Array.from(skips)));
+
                 if (mod.json.excludes) {
+                    window._logLine("This mod has excludes");
                     for (let exclude of mod.json.excludes) {
+                        window._logLine("Now processing " + exclude);
                         if (skips.has(exclude.toLowerCase())) continue;
+                        window._logLine("Not skipped");
                         if (exclusions.has(exclude.toLowerCase())) {
                             exclusions.get(exclude.toLowerCase()).push(mod.json.name);
                         } else {
@@ -766,8 +779,11 @@
                     }
                 }
                 if (mod.json.requires) {
+                    window._logLine("This mod has requirements");
                     for (let req of mod.json.requires) {
+                        window._logLine("Now processing " + req);
                         if (skips.has(req.toLowerCase())) continue;
+                        window._logLine("Not skipped");
                         if (requirements.has(req.toLowerCase())) {
                             requirements.get(req.toLowerCase()).push(mod.json.name);
                         } else {
@@ -776,6 +792,9 @@
                     }
                 }
             }
+
+            window._logLine("Exclusions: " + JSON.stringify(Array.from(exclusions.entries())));
+            window._logLine("Rquirements: " + JSON.stringify(Array.from(requirements.entries())));
 
             let exclusionFailures = [];
             let requirementFailures = [];
@@ -794,6 +813,9 @@
 
             console.log(exclusionFailures, requirementFailures);
             console.log(exclusions, requirements);
+
+            window._logLine("Exclusion failures: " + JSON.stringify(exclusionFailures));
+            window._logLine("Requirement failures: " + JSON.stringify(requirementFailures));
 
             let message = "Some issues occured while checking mod requirements:\n";
             let fucked = false;
@@ -814,6 +836,8 @@
                 _start_game();
                 return;
             }
+
+            window._logLine("Ending compatiblity check block");
         }
         // end process require/exclude
 
