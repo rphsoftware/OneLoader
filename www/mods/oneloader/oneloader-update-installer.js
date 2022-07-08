@@ -1,6 +1,7 @@
 let GH_AUTH="";
 const fs = require('fs');
 const StreamZip = require('./modloader/node_stream_zip.js');
+if ($modLoader.isInTestMode) return;
 
 if ($modLoader.config && $modLoader.config._autoUpdater && $modLoader.config._autoUpdater.check === "allow" && $modLoader.config._autoUpdater.performUpdate && $modLoader.config._autoUpdater.updateBundleURL) {
     try {

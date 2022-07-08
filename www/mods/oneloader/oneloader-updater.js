@@ -1,3 +1,5 @@
+if ($modLoader.isInTestMode) return;
+
 let GH_AUTH="";
 let repo_base="rphsoftware/oneloader";
 
