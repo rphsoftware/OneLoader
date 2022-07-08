@@ -867,7 +867,6 @@
 
         await $modLoader.$runScripts("pre_game_start", {});
 
-        debugger;
         await _start_game();
     };
 
