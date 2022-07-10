@@ -7,6 +7,7 @@ This project contains in part or in full the following projects:
 - [GOMORI](https://github.com/gilbert142/gomori) | License: **MIT** | Degree of use: Certain encryption primitives, the index.html used for backwards compatibility
 - [node-stream-zip](https://github.com/antelle/node-stream-zip) | License: **MIT** | Degree of use: Library used in full to process mods bundled in zip files
 - [JSON-Patch](https://github.com/Starcounter-Jack/JSON-Patch) | License: **MIT** | Degree of use: Library used in full to apply patches to game data
+- [Rollup](https://github.com/rollup/rollup) | License: [Multiple](https://github.com/rollup/rollup/blob/master/LICENSE.md) | Degree of use: Building plugins shipped as ES modules
 
 Additionally, I'd like to thank the developers of GOMORI for kick-starting the modding community and laying the necessary ground work for modloader development.
 
