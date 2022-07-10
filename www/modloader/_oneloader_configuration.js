@@ -1,27 +1,26 @@
-if (window.nw.App.argv[0] !== "test")
-{
+if (window.nw.App.argv[0] !== "test") {
     console.log("Loading basic oneloader configuration.");
     const MAX_MANIFEST_VERSION = 1;
     const ID_BLACKLIST = ["gomori"];
     const EXTENSION_RULES = {
-        "png":{"encrypt":"rpgmaker", "target_extension":"rpgmvp"},
-        "ogg":{"encrypt":"rpgmaker", "target_extension":"rpgmvo"}
+        "png": { "encrypt": "rpgmaker", "target_extension": "rpgmvp" },
+        "ogg": { "encrypt": "rpgmaker", "target_extension": "rpgmvo" }
     };
 
     const DATA_RULES = [
         {
             jsonKeys: [
-                "data", "data_delta", "data_pluto","data_pluto_delta"
+                "data", "data_delta", "data_pluto", "data_pluto_delta"
             ],
             formatMap: {
-                "json":{target: "KEL", delta: false, encrypt: true},
-                "jsond":{target: "KEL", delta: true,delta_method:"json", encrypt: true},
-                "kel":{target:"KEL", delta: false, encrypt: false},
-                "yml":{target:"PLUTO",delta:false, encrypt: true},
-                "ymld":{target:"PLUTO",delta:true,delta_method:"yaml", encrypt: true},
-                "yaml":{target:"PLUTO", delta:false, encrypt: true},
-                "yamld":{target:"PLUTO",delta:true,delta_method:"yaml", encrypt: true},
-                "pluto":{target:"PLUTO", delta: false, encrypt: false}
+                "json": { target: "KEL", delta: false, encrypt: true },
+                "jsond": { target: "KEL", delta: true, delta_method: "json", encrypt: true },
+                "kel": { target: "KEL", delta: false, encrypt: false },
+                "yml": { target: "PLUTO", delta: false, encrypt: true },
+                "ymld": { target: "PLUTO", delta: true, delta_method: "yaml", encrypt: true },
+                "yaml": { target: "PLUTO", delta: false, encrypt: true },
+                "yamld": { target: "PLUTO", delta: true, delta_method: "yaml", encrypt: true },
+                "pluto": { target: "PLUTO", delta: false, encrypt: false }
             },
             mountPoint: "data"
         },
@@ -30,33 +29,34 @@ if (window.nw.App.argv[0] !== "test")
                 "text", "text_delta"
             ],
             formatMap: {
-                "yml":{target:"HERO",delta:false, encrypt: true},
-                "ymld":{target:"HERO",delta:true,delta_method:"yaml", encrypt: true},
-                "yaml":{target:"HERO", delta:false, encrypt: true},
-                "yamld":{target:"HERO",delta:true,delta_method:"yaml", encrypt: true},
-                "hero":{target:"HERO",delta:false,encrypt:false}
+                "yml": { target: "HERO", delta: false, encrypt: true },
+                "ymld": { target: "HERO", delta: true, delta_method: "yaml", encrypt: true },
+                "yaml": { target: "HERO", delta: false, encrypt: true },
+                "yamld": { target: "HERO", delta: true, delta_method: "yaml", encrypt: true },
+                "hero": { target: "HERO", delta: false, encrypt: false }
             },
             mountPoint: "languages/en"
         },
         {
             jsonKeys: [
-                "maps","maps_delta"
+                "maps", "maps_delta"
             ],
             formatMap: {
-                "json":{target: "AUBREY", delta: false, encrypt: true},
-                "jsond":{target: "AUBREY", delta: true,delta_method:"json", encrypt: true},
-                "aubrey":{target:"AUBREY",delta:false,encrypt:false}
+                "json": { target: "AUBREY", delta: false, encrypt: true },
+                "jsond": { target: "AUBREY", delta: true, delta_method: "json", encrypt: true },
+                "aubrey": { target: "AUBREY", delta: false, encrypt: false }
             },
             mountPoint: "maps"
         },
         {
             jsonKeys: [
-                "plugins","plugins_delta"
+                "plugins", "plugins_delta"
             ],
             formatMap: {
-                "js":{target:"OMORI",delta:false,encrypt:true},
-                "jsd":{target:"OMORI",delta:true,delta_method:"append",encrypt:true},
-                "omori":{target:"OMORI",delta:false,encrypt:false}
+                "js": { target: "OMORI", delta: false, encrypt: true },
+                "jsd": { target: "OMORI", delta: true, delta_method: "append", encrypt: true },
+                "mjs": { target: "OMORI", delta: false, encrypt: true, parser: "esm" },
+                "omori": { target: "OMORI", delta: false, encrypt: false }
             },
             mountPoint: "js/plugins",
             pluginList: true
@@ -71,24 +71,24 @@ if (window.nw.App.argv[0] !== "test")
     const MAX_MANIFEST_VERSION = 1;
     const ID_BLACKLIST = ["gomori"];
     const EXTENSION_RULES = {
-        "png":{"encrypt":"rpgmaker", "target_extension":"png"},
-        "ogg":{"encrypt":"rpgmaker", "target_extension":"ogg"}
+        "png": { "encrypt": "rpgmaker", "target_extension": "png" },
+        "ogg": { "encrypt": "rpgmaker", "target_extension": "ogg" }
     };
 
     const DATA_RULES = [
         {
             jsonKeys: [
-                "data", "data_delta", "data_pluto","data_pluto_delta"
+                "data", "data_delta", "data_pluto", "data_pluto_delta"
             ],
             formatMap: {
-                "json":{target: "json", delta: false, encrypt: true},
-                "jsond":{target: "json", delta: true,delta_method:"json", encrypt: true},
-                "kel":{target:"KEL", delta: false, encrypt: false}, // Mods that ship encrypted files WILL fail. Don't do that. Not cool.
-                "yml":{target:"yaml",delta:false, encrypt: true},
-                "ymld":{target:"yaml",delta:true,delta_method:"yaml", encrypt: true},
-                "yaml":{target:"yaml", delta:false, encrypt: true},
-                "yamld":{target:"yaml",delta:true,delta_method:"yaml", encrypt: true},
-                "pluto":{target:"PLUTO", delta: false, encrypt: false}
+                "json": { target: "json", delta: false, encrypt: true },
+                "jsond": { target: "json", delta: true, delta_method: "json", encrypt: true },
+                "kel": { target: "KEL", delta: false, encrypt: false }, // Mods that ship encrypted files WILL fail. Don't do that. Not cool.
+                "yml": { target: "yaml", delta: false, encrypt: true },
+                "ymld": { target: "yaml", delta: true, delta_method: "yaml", encrypt: true },
+                "yaml": { target: "yaml", delta: false, encrypt: true },
+                "yamld": { target: "yaml", delta: true, delta_method: "yaml", encrypt: true },
+                "pluto": { target: "PLUTO", delta: false, encrypt: false }
             },
             mountPoint: "data"
         },
@@ -97,33 +97,34 @@ if (window.nw.App.argv[0] !== "test")
                 "text", "text_delta"
             ],
             formatMap: {
-                "yml":{target:"yaml",delta:false, encrypt: true},
-                "ymld":{target:"yaml",delta:true,delta_method:"yaml", encrypt: true},
-                "yaml":{target:"yaml", delta:false, encrypt: true},
-                "yamld":{target:"yaml",delta:true,delta_method:"yaml", encrypt: true},
-                "hero":{target:"HERO",delta:false,encrypt:false} // Mods that ship encrypted files WILL fail. Don't do that. Not cool.
+                "yml": { target: "yaml", delta: false, encrypt: true },
+                "ymld": { target: "yaml", delta: true, delta_method: "yaml", encrypt: true },
+                "yaml": { target: "yaml", delta: false, encrypt: true },
+                "yamld": { target: "yaml", delta: true, delta_method: "yaml", encrypt: true },
+                "hero": { target: "HERO", delta: false, encrypt: false } // Mods that ship encrypted files WILL fail. Don't do that. Not cool.
             },
             mountPoint: "languages/en"
         },
         {
             jsonKeys: [
-                "maps","maps_delta"
+                "maps", "maps_delta"
             ],
             formatMap: {
-                "json":{target: "json", delta: false, encrypt: true},
-                "jsond":{target: "json", delta: true,delta_method:"json", encrypt: true},
-                "aubrey":{target:"AUBREY",delta:false,encrypt:false} // Mods that ship encrypted files WILL fail. Don't do that. Not cool.
+                "json": { target: "json", delta: false, encrypt: true },
+                "jsond": { target: "json", delta: true, delta_method: "json", encrypt: true },
+                "aubrey": { target: "AUBREY", delta: false, encrypt: false } // Mods that ship encrypted files WILL fail. Don't do that. Not cool.
             },
             mountPoint: "maps"
         },
         {
             jsonKeys: [
-                "plugins","plugins_delta"
+                "plugins", "plugins_delta"
             ],
             formatMap: {
-                "js":{target:"js",delta:false,encrypt:true},
-                "jsd":{target:"js",delta:true,delta_method:"append",encrypt:true},
-                "omori":{target:"OMORI",delta:false,encrypt:false} // Mods that ship encrypted files WILL fail. Don't do that. Not cool.
+                "js": { target: "js", delta: false, encrypt: true },
+                "jsd": { target: "js", delta: true, delta_method: "append", encrypt: true },
+                "mjs": { target: "js", delta: false, encrypt: true, parser: "esm" },
+                "omori": { target: "OMORI", delta: false, encrypt: false } // Mods that ship encrypted files WILL fail. Don't do that. Not cool.
             },
             mountPoint: "js/plugins",
             pluginList: true
