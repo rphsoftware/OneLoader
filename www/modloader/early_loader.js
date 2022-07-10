@@ -4,6 +4,7 @@
     const { MAX_MANIFEST_VERSION, ID_BLACKLIST, EXTENSION_RULES, DATA_RULES } = $ONELOADER_CONFIG;
 
     const StreamZip = require('./modloader/lib/node_stream_zip.js');
+    const zlib = require('zlib');
     const native_fs = require('fs');
     const util = require('util');
     const async_fs = { // old node polyfill bruh
@@ -64,7 +65,9 @@
             }
         },
         $nwMajor: parseInt(process.versions.nw.match(/^\d*\.(\d*)\.\d*$/)[1]),
-        isInTestMode: window.nw.App.argv[0] === "test"
+        isInTestMode: window.nw.App.argv[0] === "test",
+        $parsers: new Map(),
+        $rollup: null,
     }; // BaseModLoader object
 
     /* Install the argv handler and shadow the true argv object to allow the base game to work normally */ {
@@ -85,6 +88,178 @@
         $modLoader.$log("Starting with no mods");
         _start_game();
         return
+    }
+
+    /*
+     * Abstract class for parsing mod file data sources BEFORE they are handed off to the VFS.
+     * These Mod File Parsers are responsible for providing a Buffer that the Mod File then hands off to the VFS in a dataSource.
+     */
+    class ModFileParser {
+        constructor(modFile) {
+            this.modFile = modFile;
+        }
+
+        async parse() {
+            throw new Error('Unimplemented');
+        }
+    }
+
+    /*
+     * Mod File Parser for ES Module plugins. Parses ES Modules with rollup and returns a Buffer.
+     */
+    class ESModuleParser extends ModFileParser {
+        async parse() {
+            const rollupInstance = await $modLoader.$rollup({
+                input: this.entryPointRollupFileId,
+                plugins: [this.rollupPlugin],
+            });
+
+            const result = await rollupInstance.generate({});
+            const generatedCode = result.output[0].code;
+
+            return ESModuleParser.bufferFromGeneratedCode(generatedCode);
+        }
+
+        get entryPointRollupFileId() {
+            return ESModuleParser.buildRollupFileId("mod", this.modFile.srcFile);
+        }
+
+        get rollupPlugin() {
+            return {
+                name: "OneloaderResolver",
+                resolveId: (source, importer) => {
+                    if (importer) {
+                        const { fingerprint, filename } = ESModuleParser.parseRollupFileId(importer);
+                        if (fingerprint && filename) return ESModuleParser.buildRollupFileId(fingerprint, path.relative(path.dirname(filename), source));
+                    } else if (ESModuleParser.parseRollupFileId(source).filename) {
+                        return source;
+                    }
+                    return null;
+                },
+                load: async id => {
+                    const { fingerprint, filename } = ESModuleParser.parseRollupFileId(id);
+                    if (fingerprint !== "mod") return;
+
+                    const buffer = await this.modFile.mod.readFile(path.join(this.modFile.mod.rootPath, this.modFile.srcPath, filename));
+                    return buffer.toString("utf-8");
+                },
+            };
+        }
+
+        static bufferFromGeneratedCode(generatedCode) {
+            const wrappedCode = `(function(){${generatedCode}})()`;
+            return Buffer.from(wrappedCode);
+        }
+
+        static buildRollupFileId(fingerprint, filename) {
+            return `${fingerprint}:${filename}`;
+        }
+
+        static parseRollupFileId(id) {
+            const parsedId = id.match(/^([^\:]+)\:(.+)$/);
+            if (!parsedId) return { fingerprint: null, filename: null };
+
+            const [unused, fingerprint, filename] = parsedId;
+            return { fingerprint, filename };
+        }
+    }
+
+    $modLoader.$parsers.set("esm", ESModuleParser);
+
+    /*
+     * Representation of a file as declared by a Mod.
+     * Each entry in the Mod's JSON manifest is first parsed by `Mod.processListEntryV1`.
+     * The resulting file declarations are used to construct instances of this class, which further parses it into fileData the VFS can use.
+     */
+    class ModFile {
+        constructor(mod, fileDeclaration, dataRule) {
+            this.mod = mod;
+            this.srcFile = fileDeclaration.file;
+            this.srcPath = fileDeclaration.base;
+            this.rule = dataRule;
+
+            try {
+                this.srcExtension = this.srcFile.match(/.([^\.]*$)/)[1].toLowerCase();
+            } catch (e) {
+                this.srcExtension = '';
+            }
+
+            // Destination file name in the VFS, without extension.
+            this.destFileName = this.srcFile.replace(new RegExp(`\.${this.srcExtension}$`), "");
+            // Randomize the destination plugin name if flag is enabled + this is a plugin file
+            if (this.rule && this.rule.pluginList && this.mod.json._flags.includes("randomize_plugin_name")) this.destFileName = randomString();
+        }
+
+        get format() {
+            if (!this.rule) return null;
+            return this.rule.formatMap[this.srcExtension];
+        }
+
+        /*
+         * Generates the path where this mod file's data will be injected into the VFS.
+         */
+        get injectionPoint() {
+            return `${this.rule.mountPoint}/${this.destFileName.toLowerCase()}.${this.format.target}`;
+        }
+
+        async resolveDataSource() {
+            const parserId = this.format.parser;
+            if (parserId && $modLoader.$parsers.has(parserId)) {
+                const Parser = $modLoader.$parsers.get(parserId);
+                const parser = new Parser(this);
+
+                const buffer = await parser.parse();
+                return {
+                    type: "zlib",
+                    stream: zlib.deflateSync(buffer),
+                };
+            }
+
+            return this.mod.resolveDataSource(path.join(this.srcPath, this.srcFile));
+        }
+
+        /*
+         * Builds the data object used by the VFS to represent the file.
+         */
+        async buildFileData() {
+            const format = this.format;
+
+            const fileData = {
+                injectionPoint: this.injectionPoint,
+                ogName: `${this.destFileName}.${format.target}`,
+                mode: format.encrypt ? "steam" : "pass",
+                dataSource: await this.resolveDataSource(),
+                delta: format.delta,
+            };
+            if (fileData.delta) fileData.delta_method = format.delta_method;
+
+            return fileData;
+        }
+    }
+    class ModAsset extends ModFile {
+        get targetExtension() {
+            return this.extensionRule ? this.extensionRule.target_extension : this.srcExtension;
+        }
+
+        get injectionPoint() {
+            return `${path.join(this.srcPath, this.destFileName).replace(/\\/g, "/").toLowerCase()}.${this.targetExtension}`;
+        }
+
+        async buildFileData() {
+            const extensionRule = this.extensionRule;
+
+            return {
+                injectionPoint: this.injectionPoint,
+                ogName: `${this.destFileName}.${this.targetExtension}`,
+                mode: (extensionRule && extensionRule.encrypt) ? extensionRule.encrypt : "pass",
+                dataSource: await this.mod.resolveDataSource(path.join(this.srcPath, this.srcFile)),
+                delta: false,
+            };
+        }
+
+        get extensionRule() {
+            return EXTENSION_RULES[this.srcExtension] || null;
+        }
     }
 
     class Mod {
@@ -131,33 +306,15 @@
         async processAssetsV1(list) {
             for (let el of list) {
                 let patchedFiles = await this.processListEntryV1(el);
-                for (let { base, file: oogName } of patchedFiles) {
-                    let extension = "";
-                    let ogName = oogName;
-                    try {
-                        extension = ogName.match(/.([^\.]*$)/)[1].toLowerCase();
-                    } catch (e) { }
-                    let injectionPoint = path.join(base, ogName).replace(/\\/g, "/").toLowerCase();
-                    if (EXTENSION_RULES[extension] && EXTENSION_RULES[extension].target_extension) {
-                        let target = EXTENSION_RULES[extension].target_extension;
-                        injectionPoint = injectionPoint.replace(new RegExp(extension + "$"), target);
-                        ogName = ogName.replace(new RegExp(extension + "$", "i"), target);
-                    }
+                for (let fileDeclaration of patchedFiles) {
+                    const modAsset = new ModAsset(this, fileDeclaration, null);
 
-                    let fileData = {
-                        injectionPoint,
-                        ogName,
-                        mode: (EXTENSION_RULES[extension] && EXTENSION_RULES[extension].encrypt) ? EXTENSION_RULES[extension].encrypt : "pass",
-                        dataSource: await this.resolveDataSource(path.join(base, oogName)),
-                        delta: false
-                    };
-
-                    this.files.push(fileData);
+                    this.files.push(await modAsset.buildFileData());
                 }
             }
         }
         async processDataRulesV1(rules) {
-            let { jsonKeys, formatMap, mountPoint, pluginList } = rules;
+            let { jsonKeys, mountPoint, pluginList } = rules;
             let allEntries = new Set();
             let doneEntries = new Set();
             for (let k of jsonKeys) {
@@ -168,50 +325,35 @@
                 }
             }
             for (let entry of Array.from(allEntries)) {
-                let f = await this.processListEntryV1(entry);
-                for (let { base, file: oogName } of f) {
+                let fileDeclarations = await this.processListEntryV1(entry);
+                for (let fileDeclaration of fileDeclarations) {
                     try {
-                        let extension = "";
-                        let ogName = oogName;
-                        let fileName = oogName.toLowerCase();
-                        try {
-                            extension = ogName.match(/.([^\.]*$)/)[1].toLowerCase();
-                        } catch (e) { }
-                        if (pluginList && this.json._flags.includes("randomize_plugin_name")) {
-                            let rs = randomString();
-                            fileName = rs + "." + extension;
-                            ogName = rs + "." + extension;
+                        const modFile = new ModFile(this, fileDeclaration, rules);
+                        if (!modFile.format) {
+                            $modLoader.$log(`${this.json.id} + ${mountPoint} + ${entry} | ${modFile.srcFile} skipped, unknown extension`);
+                            continue;
                         }
-                        if (formatMap[extension]) {
-                            let format = formatMap[extension];
-                            let fileData = {
-                                injectionPoint: mountPoint + "/" + fileName.replace(new RegExp(extension + "$"), format.target),
-                                ogName: ogName.replace(new RegExp(extension + "$", "i"), format.target),
-                                mode: format.encrypt ? "steam" : "pass",
-                                dataSource: await this.resolveDataSource(path.join(base, oogName)),
-                                delta: format.delta
-                            };
-                            if (fileData.delta) {
-                                fileData.delta_method = format.delta_method;
-                            }
-                            if (doneEntries.has(fileData.injectionPoint)) {
-                                $modLoader.$log(`${this.json.id} + ${mountPoint} + ${entry} | ${fileData.injectionPoint} can't be patched twice`);
-                                continue;
-                            }
-                            doneEntries.add(fileData.injectionPoint);
-                            if (pluginList) {
-                                if (format.delta) {
-                                    this.pluginsDelta.push(fileData.injectionPoint);
-                                } else {
-                                    this.plugins.push(fileData.injectionPoint);
-                                }
-                            }
-                            this.files.push(fileData);
-                        } else {
-                            $modLoader.$log(`${this.json.id} + ${mountPoint} + ${entry} | ${oogName} skipped, unknown extension`)
+
+                        const fileData = await modFile.buildFileData();
+
+                        if (doneEntries.has(fileData.injectionPoint)) {
+                            $modLoader.$log(`${this.json.id} + ${mountPoint} + ${entry} | ${fileData.injectionPoint} can't be patched twice`);
+                            continue;
                         }
+                        doneEntries.add(fileData.injectionPoint);
+
+                        if (pluginList) {
+                            if (modFile.format.delta) {
+                                this.pluginsDelta.push(fileData.injectionPoint);
+                            } else {
+                                this.plugins.push(fileData.injectionPoint);
+                            }
+                        }
+
+                        this.files.push(fileData);
                     } catch (e) {
-                        $modLoader.$log(`[WARN] Failed to resolve ${base} ${oogName} when processing ${this.json.id}`)
+                        $modLoader.$log(`[WARN] Failed to resolve ${fileDeclaration.base} ${fileDeclaration.file} when processing ${this.json.id}`);
+                        console.warn(e);
                     }
                 }
             }
@@ -494,6 +636,8 @@
     }
 
     async function run() {
+        $modLoader.$rollup = await window._loadRollup();
+
         if (!native_fs.existsSync(path.join(base, "mods"))) {
             native_fs.mkdirSync(path.join(base, "mods"));
         }
