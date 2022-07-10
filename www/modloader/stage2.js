@@ -21,7 +21,7 @@ function _safe_prompt(option1, option2, message) {
     document.body.appendChild(container);
 
     return new Promise(resolve => {
-        opt1btn.addEventListener("click", function() {
+        opt1btn.addEventListener("click", function () {
             prompt.remove();
             opt1btn.remove();
             opt2btn.remove();
@@ -29,7 +29,7 @@ function _safe_prompt(option1, option2, message) {
 
             resolve(1);
         });
-        opt2btn.addEventListener("click", function() {
+        opt2btn.addEventListener("click", function () {
             prompt.remove();
             opt1btn.remove();
             opt2btn.remove();
@@ -56,10 +56,10 @@ async function _modloader_stage2(knownMods) {
     const yaml = require('./js/libs/js-yaml-master');
 
     await $modLoader.$runScripts("pre_stage_2", {
-         knownMods, $modLoader
+        knownMods, $modLoader
     });
 
-    let sortedMods = Array.from(knownMods).sort((a,b)=>(a[1]._raw.priority - b[1]._raw.priority)).map(a=>a[1]);
+    let sortedMods = Array.from(knownMods).sort((a, b) => (a[1]._raw.priority - b[1]._raw.priority)).map(a => a[1]);
     console.log(sortedMods);
 
     const PROTECTED_FILES = [
@@ -77,7 +77,7 @@ async function _modloader_stage2(knownMods) {
         "js/plugins.js",
         "modloader/early_loader.js",
         "modloader/logging.js",
-        "modloader/node_stream_zip.js",
+        "modloader/lib/node_stream_zip.js",
         "modloader/stage2.js",
         "js/main.js",
     ];
@@ -87,7 +87,7 @@ async function _modloader_stage2(knownMods) {
     $oneLoaderGui.setPbCurr(0);
 
     window._logLine("Normalizing injection paths");
-    sortedMods.forEach(function(v) {
+    sortedMods.forEach(function (v) {
         $oneLoaderGui.inc();
         for (let file of v.files) {
             file.injectionPoint = file.injectionPoint.replace(/\\/g, "/");
@@ -99,11 +99,11 @@ async function _modloader_stage2(knownMods) {
     window._logLine("Looking for conflicted files");
 
     $oneLoaderGui.setHt("Looking for conflicted files");
-    
+
     let conflictFiles = new Map();
     let deltaFiles = new Map();
 
-    sortedMods.forEach(function(v) {
+    sortedMods.forEach(function (v) {
         let nf = [];
         for (let file of v.files) {
             if (PROTECTED_FILES.includes(file.injectionPoint)) {
@@ -182,7 +182,7 @@ async function _modloader_stage2(knownMods) {
     for (let k of conflictFiles.keys()) {
         let e = conflictFiles.get(k);
 
-        while(e.length > 1) {
+        while (e.length > 1) {
             let m0 = e[0].mod.json.id;
             let m1 = e[1].mod.json.id;
 
@@ -229,7 +229,7 @@ async function _modloader_stage2(knownMods) {
             }
         }
     }
-    
+
     $modLoader.syncConfig();
 
     window._logLine("Building overlayFS image");
@@ -237,7 +237,7 @@ async function _modloader_stage2(knownMods) {
     $oneLoaderGui.setHt("Building base overlay");
     $oneLoaderGui.setPbMax(conflictFiles.size);
     $oneLoaderGui.setPbCurr(0);
-    
+
     let overlayFS = {};
 
 
@@ -257,7 +257,7 @@ async function _modloader_stage2(knownMods) {
     $oneLoaderGui.setHt("Delta patching");
     $oneLoaderGui.setPbMax(deltaFiles.size);
     $oneLoaderGui.setPbCurr(0);
-    
+
     let deltaSkip = [];
     for (let k of deltaFiles.keys()) {
         $oneLoaderGui.inc();
@@ -274,7 +274,7 @@ async function _modloader_stage2(knownMods) {
             let method = "";
             let patchData = [];
             for (let b of files) {
-                let {file} = b;
+                let { file } = b;
                 if (method.length === 0) method = file.delta_method;
                 if (method !== file.delta_method) {
                     throw new TypeError("Delta method mis-match");
@@ -284,7 +284,7 @@ async function _modloader_stage2(knownMods) {
                     [(await _read_file(file.dataSource)).toString("utf-8"), b.mod.json.id]
                 );
             }
-            
+
             window._logLine("| Applying patches with method: " + method);
             let documentBase;
             if (method === "yaml") {
@@ -330,13 +330,13 @@ async function _modloader_stage2(knownMods) {
                     stream: zlib.deflateSync(Buffer.from(fin))
                 }
             };
-        } catch(E) {
+        } catch (E) {
             deltaSkip.push([E, k]);
             window._logLine("| Patching skipped: " + E.toString());
         }
     }
     if (deltaSkip.length > 0) {
-        alert("Please note that SOME patching was skipped due to errors. The following files will remain vanilla: " + deltaSkip.map(a => a[1]).join(",") +"\nError detalis can be found in latest.log");
+        alert("Please note that SOME patching was skipped due to errors. The following files will remain vanilla: " + deltaSkip.map(a => a[1]).join(",") + "\nError detalis can be found in latest.log");
     }
 
     window.$modLoader.overlayFS = overlayFS;

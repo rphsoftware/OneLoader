@@ -1,9 +1,9 @@
-(function b(){
+(function b() {
     window._logLine("-=-=-= Early loader =-=-=-");
 
     const { MAX_MANIFEST_VERSION, ID_BLACKLIST, EXTENSION_RULES, DATA_RULES } = $ONELOADER_CONFIG;
 
-    const StreamZip = require('./modloader/node_stream_zip.js');
+    const StreamZip = require('./modloader/lib/node_stream_zip.js');
     const native_fs = require('fs');
     const util = require('util');
     const async_fs = { // old node polyfill bruh
@@ -22,7 +22,7 @@
     function escapeRegex(input) {
         return input.replace(/[[\](){}?*+^$\\.|]/g, '\\$&');
     }
-    
+
     function fileName(input) {
         input = input.replace(/\/$/, "");
         return input.match(/[^\/]+$/)[0];
@@ -31,13 +31,13 @@
     $modLoader = {
         $log: window._logLine,
         $execScripts: {
-            "pre_stage_2":[],
-            "post_stage_2":[],
-            "pre_game_start":[],
-            "pre_plugin_injection":[],
-            "pre_window_onload":[],
-            "when_discovered_2":[],
-            "when_discovered_3":[]
+            "pre_stage_2": [],
+            "post_stage_2": [],
+            "pre_game_start": [],
+            "pre_plugin_injection": [],
+            "pre_window_onload": [],
+            "when_discovered_2": [],
+            "when_discovered_3": []
         },
         async $runRequire(data, p) {
             native_fs.writeFileSync(path.join(base, "temp_ONELOADER.js"), data);
@@ -67,7 +67,7 @@
         isInTestMode: window.nw.App.argv[0] === "test"
     }; // BaseModLoader object
 
-    /* Install the argv handler and shadow the true argv object to allow the base game to work normally */ { 
+    /* Install the argv handler and shadow the true argv object to allow the base game to work normally */ {
         let key = window.nw.App.argv[0];
         $modLoader.realArgv = window.nw.App.argv;
         window.nw.App = new Proxy(window.nw.App, {
@@ -100,7 +100,7 @@
             this.priority = 0;
             this.start();
         }
-        start() {}
+        start() { }
         async init() {
             await this.mainInit();
             await this.locateModJson();
@@ -119,7 +119,7 @@
         async processListEntryV1(entry) {
             if (entry.endsWith("/")) {
                 let files = await this.filesInDir(entry);
-                return files.map(a => {return {base: entry, file: a}});
+                return files.map(a => { return { base: entry, file: a } });
             } else {
                 let split = entry.split("/");
                 let file = split.pop();
@@ -131,12 +131,12 @@
         async processAssetsV1(list) {
             for (let el of list) {
                 let patchedFiles = await this.processListEntryV1(el);
-                for (let {base, file: oogName} of patchedFiles) {
+                for (let { base, file: oogName } of patchedFiles) {
                     let extension = "";
                     let ogName = oogName;
                     try {
                         extension = ogName.match(/.([^\.]*$)/)[1].toLowerCase();
-                    } catch(e) {}
+                    } catch (e) { }
                     let injectionPoint = path.join(base, ogName).replace(/\\/g, "/").toLowerCase();
                     if (EXTENSION_RULES[extension] && EXTENSION_RULES[extension].target_extension) {
                         let target = EXTENSION_RULES[extension].target_extension;
@@ -157,7 +157,7 @@
             }
         }
         async processDataRulesV1(rules) {
-            let {jsonKeys, formatMap, mountPoint, pluginList} = rules;
+            let { jsonKeys, formatMap, mountPoint, pluginList } = rules;
             let allEntries = new Set();
             let doneEntries = new Set();
             for (let k of jsonKeys) {
@@ -169,14 +169,14 @@
             }
             for (let entry of Array.from(allEntries)) {
                 let f = await this.processListEntryV1(entry);
-                for (let {base, file: oogName} of f) {
+                for (let { base, file: oogName } of f) {
                     try {
                         let extension = "";
                         let ogName = oogName;
                         let fileName = oogName.toLowerCase();
                         try {
                             extension = ogName.match(/.([^\.]*$)/)[1].toLowerCase();
-                        } catch(e) {}
+                        } catch (e) { }
                         if (pluginList && this.json._flags.includes("randomize_plugin_name")) {
                             let rs = randomString();
                             fileName = rs + "." + extension;
@@ -210,7 +210,7 @@
                         } else {
                             $modLoader.$log(`${this.json.id} + ${mountPoint} + ${entry} | ${oogName} skipped, unknown extension`)
                         }
-                    } catch(e) {
+                    } catch (e) {
                         $modLoader.$log(`[WARN] Failed to resolve ${base} ${oogName} when processing ${this.json.id}`)
                     }
                 }
@@ -218,7 +218,7 @@
         }
         async processAsyncExecV1() {
             if (this.json.asyncExec) {
-                for(let {file, runat} of this.json.asyncExec) {
+                for (let { file, runat } of this.json.asyncExec) {
                     let fileData = await _read_file(await this.resolveDataSource(file));
                     if (runat === "when_discovered") {
                         $modLoader.$runEval(fileData, {
@@ -249,7 +249,7 @@
 
         async processImageDeltas() {
             if (this.json.image_deltas) {
-                for (let {patch: target, with: file, dir} of this.json.image_deltas) {
+                for (let { patch: target, with: file, dir } of this.json.image_deltas) {
                     if (!dir) await this.processImageDeltaEntry(target, file);
                     else {
                         let files = await this.filesInDir(file);
@@ -291,7 +291,7 @@
                 throw new Error("Unable to process: Invalid manifest version " + this.json.manifestVersion);
             }
         }
-        async mainInit() {}
+        async mainInit() { }
         async readFile() { throw new Error("Unimplemented"); }
         async readDir() { throw new Error("Unimplemented"); }
         async isDir() { throw new Error("Unimplemented"); }
@@ -316,7 +316,7 @@
                 }
                 if (crashOnFail) throw new Error("Unable to find mod.json");
                 else return false;
-            } catch(e) {
+            } catch (e) {
                 $modLoader.$log(e.message);
                 if (crashOnFail) throw new Error("Unable to find mod.json");
                 else return false;
@@ -327,7 +327,7 @@
             modJson = modJson.toString("utf-8");
             try {
                 modJson = JSON.parse(modJson);
-            } catch(e) {
+            } catch (e) {
                 throw new Error("Failed to decode mod.json");
             }
             if (!modJson.manifestVersion) modJson.manifestVersion = 1;
@@ -348,7 +348,7 @@
         async mainInit() {
             $modLoader.$log("Initializing a zip mod from " + this.basePath);
             this.fd = native_fs.openSync(this.basePath, "r");
-            this.sz = new StreamZip.async({fd: this.fd});
+            this.sz = new StreamZip.async({ fd: this.fd });
             let sym = Object.getOwnPropertySymbols(this.sz);
             sym = sym.filter(a => a.toString() === "Symbol(zip)");
             this.sz.resolvedStreamZip = await this.sz[sym[0]];
@@ -357,12 +357,12 @@
         }
 
         async readFile(sPath) {
-            sPath = sPath.replace(/\\/g,"/");
+            sPath = sPath.replace(/\\/g, "/");
             let e = this._resolveEntry(sPath);
             return await this.sz.entryData(e);
         }
         async readDir(sPath) {
-            sPath = sPath.replace(/\\/g,"/");
+            sPath = sPath.replace(/\\/g, "/");
             sPath = sPath.replace(/^\//, "");
             if (!sPath.endsWith("/")) sPath = sPath + "/";
             if (sPath.length === 1) {
@@ -401,7 +401,7 @@
             };
         }
         isDir(sPath) {
-            sPath = sPath.replace(/\\/g,"/");
+            sPath = sPath.replace(/\\/g, "/");
             if (this._rootsCache.has(sPath)) {
                 return true;
             }
@@ -409,18 +409,18 @@
             return !e.isFile;
         }
         exists(sPath) {
-            sPath = sPath.replace(/\\/g,"/");
-            try { this._resolveEntry(sPath); return true; } catch(e) { return false; }
+            sPath = sPath.replace(/\\/g, "/");
+            try { this._resolveEntry(sPath); return true; } catch (e) { return false; }
         }
         _resolveEntry(sPath) {
-            sPath = sPath.replace(/\\/g,"/");
-            let cleanupRegexps = [/$^/,/^\//,/^\/|\/$/g,/\/$/];
+            sPath = sPath.replace(/\\/g, "/");
+            let cleanupRegexps = [/$^/, /^\//, /^\/|\/$/g, /\/$/];
             let addSlashRegexps = [/$^/, /^/, /$/, /^|$/g];
             $modLoader.$log("ZIPMOD, _resolveEntry: " + sPath)
             for (let a of cleanupRegexps) {
                 for (let b of addSlashRegexps) {
-                    let aa = new RegExp(a.source,a.flags);
-                    let bb = new RegExp(b.source,b.flags);
+                    let aa = new RegExp(a.source, a.flags);
+                    let bb = new RegExp(b.source, b.flags);
                     let mangled = sPath.replace(aa, "").replace(bb, "/");
                     if (this._entryCache[mangled]) {
                         return this._entryCache[mangled];
@@ -454,13 +454,13 @@
         async mainInit() {
             this._statCache = new Map();
         }
-        async readFile(sPath) { 
+        async readFile(sPath) {
             return await async_fs.readFile(path.join(this.basePath, sPath));
         }
         async readDir(sPath) {
             return await async_fs.readdir(path.join(this.basePath, sPath));
         }
-        async isDir(sPath) { 
+        async isDir(sPath) {
             if (this._statCache.has(sPath)) {
                 return this._statCache.get(sPath).isDirectory();
             } else {
@@ -469,10 +469,10 @@
                 return stats.isDirectory();
             }
         }
-        async exists(sPath) { 
+        async exists(sPath) {
             return native_fs.existsSync(path.join(this.basePath, sPath))
         }
-        async resolveDataSource(sPath) { 
+        async resolveDataSource(sPath) {
             return {
                 type: "filesystem",
                 path: path.join(this.basePath, this.rootPath, sPath)
@@ -537,7 +537,7 @@
 
 
         $modLoader.config = JSON.parse(native_fs.readFileSync(path.join(base, "save", "mods.json"), "utf-8"));
-        $modLoader.syncConfig = function() {
+        $modLoader.syncConfig = function () {
             native_fs.writeFileSync(path.join(base, "save", "mods.json"), JSON.stringify($modLoader.config, null, 2));
         }
 
@@ -557,8 +557,8 @@
         if ($modLoader.config._basilFiles) { //Debasilification procedure
             window._logLine("Gomori-derived mods.json detected, finding, restoring and removing basil files");
             try {
-            await debasilify(base);
-            }catch(e) {alert(e);}
+                await debasilify(base);
+            } catch (e) { alert(e); }
             $modLoader.config._basilFiles = undefined;
             alert("The modloader tried its best to undo GOMORI-derived changes after an upgrade, however it could have missed something. For an optimal experience, it's advised to reinstall the game.");
             $modLoader.syncConfig();
@@ -566,7 +566,7 @@
 
         $oneLoaderGui.setHt("Loading wasm");
 
-        await wasm_bindgen("./modloader/imagediff2_bg.wasm");
+        await wasm_bindgen("./modloader/lib/imagediff2_bg.wasm");
 
         $oneLoaderGui.setHt("Inspecting mods");
 
@@ -580,59 +580,59 @@
             }
             window._logLine("> Now inspecting: " + mod_file);
             try {
-            let mod_stats = await async_fs.stat(path.join(base, "mods", mod_file));
-            let mod;
+                let mod_stats = await async_fs.stat(path.join(base, "mods", mod_file));
+                let mod;
 
-            if (mod_stats.isDirectory()) {
-                mod = new DirectoryMod(path.join(base, "mods", mod_file));
-            } else {
-                if (!mod_file.endsWith(".zip")) {
-                    window._logLine("| [ERROR] Skipping, not directory and extension isn't zip");
+                if (mod_stats.isDirectory()) {
+                    mod = new DirectoryMod(path.join(base, "mods", mod_file));
+                } else {
+                    if (!mod_file.endsWith(".zip")) {
+                        window._logLine("| [ERROR] Skipping, not directory and extension isn't zip");
+                        errorCount++;
+                        continue;
+                    }
+                    mod = new ZipMod(path.join(base, "mods", mod_file));
+                }
+                await mod.init();
+
+                if (mod.json.exec && mod.json.exec.length > 0) {
+                    alert(mod.json.id + " makes use of exec. That feature is unsupported and the mod WILL NOT be loaded.");
+                    continue;
+                }
+
+                if (knownMods.has(mod.json.id)) {
+                    window._logLine("| [ERROR] Unable to load " + mod_file + ", Duplicate ID");
                     errorCount++;
                     continue;
                 }
-                mod = new ZipMod(path.join(base, "mods", mod_file));
-            }
-            await mod.init();
 
-            if (mod.json.exec && mod.json.exec.length > 0) {
-                alert(mod.json.id + " makes use of exec. That feature is unsupported and the mod WILL NOT be loaded.");
-                continue;
-            }
-
-            if (knownMods.has(mod.json.id)) {
-                window._logLine("| [ERROR] Unable to load " + mod_file + ", Duplicate ID");
-                errorCount++;
-                continue;
-            }
-
-            allMods.set(mod.json.id, mod.json);
-            let flags = mod.json._flags || [];
-            if (ID_BLACKLIST.includes(mod.json.id)) {
-                window._logLine("[ERROR] ID blacklisted, skipping");
-                errorCount++;
-                continue;
-            }
-            if ($modLoader.config[mod.json.id] === false) {
-                if (!flags.includes("prevent_disable")) {
-                    window._logLine("| Mod disabled, skipping");
+                allMods.set(mod.json.id, mod.json);
+                let flags = mod.json._flags || [];
+                if (ID_BLACKLIST.includes(mod.json.id)) {
+                    window._logLine("[ERROR] ID blacklisted, skipping");
+                    errorCount++;
                     continue;
                 }
-            } else {
-                $modLoader.config[mod.json.id] = true;
-            }
+                if ($modLoader.config[mod.json.id] === false) {
+                    if (!flags.includes("prevent_disable")) {
+                        window._logLine("| Mod disabled, skipping");
+                        continue;
+                    }
+                } else {
+                    $modLoader.config[mod.json.id] = true;
+                }
 
-            mod.json._enabled = true;
-                            
-            window._logLine("| Name: " + mod.json.name);
-            window._logLine("| ID: " + mod.json.id);
-            window._logLine("| Version: " + mod.json.version);
-            window._logLine("| Description: " + mod.json.description);
+                mod.json._enabled = true;
 
-            await mod.processMod();
-            knownMods.set(mod.json.id, mod.entry);
-            } catch(e) {
-                window._logLine("| [ERROR] Catastrophic failure when processing " + mod_file + "! " + e.toString() +"\n" + e.stack);
+                window._logLine("| Name: " + mod.json.name);
+                window._logLine("| ID: " + mod.json.id);
+                window._logLine("| Version: " + mod.json.version);
+                window._logLine("| Description: " + mod.json.description);
+
+                await mod.processMod();
+                knownMods.set(mod.json.id, mod.entry);
+            } catch (e) {
+                window._logLine("| [ERROR] Catastrophic failure when processing " + mod_file + "! " + e.toString() + "\n" + e.stack);
                 errorCount++;
             }
         }
@@ -653,16 +653,16 @@
 
             window._logLine("Starting compatiblity check block");
 
-            for (let [id, {json}] of knownMods.entries()) {
+            for (let [id, { json }] of knownMods.entries()) {
                 window._logLine("Performing satisfaction and skip check building for " + id);
 
-                if(!satisfaction.has(id.toLowerCase())) {
+                if (!satisfaction.has(id.toLowerCase())) {
                     satisfaction.set(id.toLowerCase(), []);
                 }
                 satisfaction.get(id.toLowerCase()).push(json.name);
                 if (json.satisfies) {
                     for (let s of json.satisfies) {
-                        if(!satisfaction.has(s.toLowerCase())) {
+                        if (!satisfaction.has(s.toLowerCase())) {
                             satisfaction.set(s.toLowerCase(), []);
                         }
                         satisfaction.get(s.toLowerCase()).push(json.name);
@@ -673,7 +673,7 @@
                     for (let victimMod in json.skip_checks) {
                         if (!skipChecks.has(victimMod.toLowerCase()))
                             skipChecks.set(victimMod.toLowerCase(), new Set());
-                        
+
                         for (let skippable of json.skip_checks[victimMod])
                             skipChecks.get(victimMod.toLowerCase()).add(skippable.toLowerCase());
                     }
@@ -700,7 +700,7 @@
 
                         for (let a of skipChecks.get(innerSatisfaction.toLowerCase())) {
                             skips.add(a);
-                        }  
+                        }
                     }
                 }
 
@@ -748,7 +748,7 @@
 
             for (let [key, value] of requirements.entries()) {
                 if (!satisfaction.has(key)) {
-                    requirementFailures.push(`${value.join(", ")} require${value.length === 1 ? "s": ""} ${key} but it's not installed.`);
+                    requirementFailures.push(`${value.join(", ")} require${value.length === 1 ? "s" : ""} ${key} but it's not installed.`);
                 }
             }
 
@@ -761,7 +761,7 @@
             let message = "Some issues occured while checking mod requirements:\n";
             let fucked = false;
             if (exclusionFailures.length > 0) {
-                message = message +  "\n" + exclusionFailures.map(a => "- " + a).join("\n");
+                message = message + "\n" + exclusionFailures.map(a => "- " + a).join("\n");
                 fucked = true;
             }
             if (requirementFailures.length > 0) {
@@ -871,7 +871,7 @@
     };
 
     run().catch(e => {
-        alert("A catastrophic failure occured while loading the modloader. The game will attempt to start in safe mode, although it may be unstable. If this persists, report the issue on github. You can also try starting the game with the --no-mods launch argument.\n"+ e.stack);
+        alert("A catastrophic failure occured while loading the modloader. The game will attempt to start in safe mode, although it may be unstable. If this persists, report the issue on github. You can also try starting the game with the --no-mods launch argument.\n" + e.stack);
         _start_game();
     });
 })();
