@@ -130,7 +130,7 @@
                 resolveId: (source, importer) => {
                     if (importer) {
                         const { fingerprint, filename } = ESModuleParser.parseRollupFileId(importer);
-                        if (fingerprint && filename) return ESModuleParser.buildRollupFileId(fingerprint, path.relative(path.dirname(filename), source));
+                        if (fingerprint && filename) return ESModuleParser.buildRollupFileId(fingerprint, path.join(path.dirname(filename), source));
                     } else if (ESModuleParser.parseRollupFileId(source).filename) {
                         return source;
                     }
@@ -152,7 +152,8 @@
         }
 
         static buildRollupFileId(fingerprint, filename) {
-            return `${fingerprint}:${filename}`;
+            const extension = path.extname(filename);
+            return `${fingerprint}:${filename}${extension ? "" : ".js"}`;
         }
 
         static parseRollupFileId(id) {
