@@ -95,8 +95,9 @@
      * These Mod File Parsers are responsible for providing a Buffer that the Mod File then hands off to the VFS in a dataSource.
      */
     class ModFileParser {
-        constructor(modFile) {
+        constructor(modFile, config = {}) {
             this.modFile = modFile;
+            this.config = config;
         }
 
         async parse() {
@@ -117,7 +118,7 @@
             const result = await rollupInstance.generate({});
             const generatedCode = result.output[0].code;
 
-            return ESModuleParser.bufferFromGeneratedCode(generatedCode);
+            return ESModuleParser.bufferFromGeneratedCode(generatedCode, !this.config.noIIFE);
         }
 
         get entryPointRollupFileId() {
@@ -146,8 +147,8 @@
             };
         }
 
-        static bufferFromGeneratedCode(generatedCode) {
-            const wrappedCode = `(function(){${generatedCode}})()`;
+        static bufferFromGeneratedCode(generatedCode, useIIFE) {
+            const wrappedCode = `${useIIFE ? "(function(){" : ""}${generatedCode}${useIIFE ? "})()" : ""}`;
             return Buffer.from(wrappedCode);
         }
 
@@ -165,7 +166,16 @@
         }
     }
 
+    class ESModuleNoIIFEParser extends ESModuleParser {
+        constructor(modFile) {
+            super(modFile, {
+                noIIFE: true
+            })
+        }
+    }
+
     $modLoader.$parsers.set("esm", ESModuleParser);
+    $modLoader.$parsers.set("esm_no_iife", ESModuleNoIIFEParser);
 
     /*
      * Representation of a file as declared by a Mod.
@@ -391,7 +401,7 @@
                                 base: split.join("/"), file
                             }, {
                                 formatMap: {
-                                    "mjs": { target: "ks", delta: false, encrypt: false, parser: "esm" }
+                                    "mjs": { target: "ks", delta: false, encrypt: false, parser: "esm_no_iife" }
                                 }
                             });
                             let ds = await mf.resolveDataSource();
