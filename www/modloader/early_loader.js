@@ -405,7 +405,8 @@
                                 }
                             });
                             let ds = await mf.resolveDataSource();
-                            console.log(ds);
+                            fileData = await _read_file(ds);
+                            data = fileData.toString("utf-8");
                         }
                         $modLoader.$execScripts[runat].push({
                             data, req
