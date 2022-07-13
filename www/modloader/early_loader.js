@@ -377,7 +377,7 @@
                 for (let { file: file_name, runat } of this.json.asyncExec) {
                     let fileData = await _read_file(await this.resolveDataSource(file_name));
                     if (runat === "when_discovered") {
-                        if (file.endsWith(".mjs")) {
+                        if (file_name.endsWith(".mjs")) {
                             $modLoader.$log("[ERROR] Cannot have ES Modules in when_discovered");
                             alert(`AsyncExec: Cannot use when_discovered with ESM, @${this.json.id}:${file_name}`);
                             continue;
