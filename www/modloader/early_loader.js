@@ -361,9 +361,14 @@
         }
         async processAsyncExecV1() {
             if (this.json.asyncExec) {
-                for (let { file, runat } of this.json.asyncExec) {
-                    let fileData = await _read_file(await this.resolveDataSource(file));
+                for (let { file: file_name, runat } of this.json.asyncExec) {
+                    let fileData = await _read_file(await this.resolveDataSource(file_name));
                     if (runat === "when_discovered") {
+                        if (file.endsWith(".mjs")) {
+                            $modLoader.$log("[ERROR] Cannot have ES Modules in when_discovered");
+                            alert(`AsyncExec: Cannot use when_discovered with ESM, @${this.json.id}:${file_name}`);
+                            continue;
+                        }
                         $modLoader.$runEval(fileData, {
                             mod: this
                         });
@@ -373,6 +378,24 @@
                         if ((/\_require$/).test(runat)) {
                             runat = runat.match(/(.*)\_require$/)[1];
                             req = true;
+                        }
+                        if (file_name.endsWith(".mjs")) {
+                            if (req) {
+                                $modLoader.$log("[ERROR] Cannot have ES Modules with requre");
+                                alert(`AsyncExec: Cannot use require with ESM, @${this.json.id}:${file_name}`);
+                                continue;
+                            }
+                            let split = file_name.split("/");
+                            let file = split.pop();
+                            let mf = new ModFile(this, {
+                                base: split.join("/"), file
+                            }, {
+                                formatMap: {
+                                    "mjs": { target: "ks", delta: false, encrypt: false, parser: "esm" }
+                                }
+                            });
+                            let ds = await mf.resolveDataSource();
+                            console.log(ds);
                         }
                         $modLoader.$execScripts[runat].push({
                             data, req
