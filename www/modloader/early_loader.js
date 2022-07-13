@@ -95,8 +95,9 @@
      * These Mod File Parsers are responsible for providing a Buffer that the Mod File then hands off to the VFS in a dataSource.
      */
     class ModFileParser {
-        constructor(modFile) {
+        constructor(modFile, config = {}) {
             this.modFile = modFile;
+            this.config = config;
         }
 
         async parse() {
@@ -117,7 +118,7 @@
             const result = await rollupInstance.generate({});
             const generatedCode = result.output[0].code;
 
-            return ESModuleParser.bufferFromGeneratedCode(generatedCode);
+            return ESModuleParser.bufferFromGeneratedCode(generatedCode, !this.config.noIIFE);
         }
 
         get entryPointRollupFileId() {
@@ -146,9 +147,12 @@
             };
         }
 
-        static bufferFromGeneratedCode(generatedCode) {
+        static bufferFromGeneratedCode(generatedCode, useIIFE) {
             const wrappedCode = `(function(){${generatedCode}})()`;
-            return Buffer.from(wrappedCode);
+            if (useIIFE)
+                return Buffer.from(wrappedCode);
+            else
+                return Buffer.from(generatedCode);
         }
 
         static buildRollupFileId(fingerprint, filename) {
@@ -165,7 +169,16 @@
         }
     }
 
+    class ESModuleNoIIFEParser extends ESModuleParser {
+        constructor(modFile) {
+            super(modFile, {
+                noIIFE: true
+            })
+        }
+    }
+
     $modLoader.$parsers.set("esm", ESModuleParser);
+    $modLoader.$parsers.set("esm_no_iife", ESModuleNoIIFEParser);
 
     /*
      * Representation of a file as declared by a Mod.
@@ -361,9 +374,14 @@
         }
         async processAsyncExecV1() {
             if (this.json.asyncExec) {
-                for (let { file, runat } of this.json.asyncExec) {
-                    let fileData = await _read_file(await this.resolveDataSource(file));
+                for (let { file: file_name, runat } of this.json.asyncExec) {
+                    let fileData = await _read_file(await this.resolveDataSource(file_name));
                     if (runat === "when_discovered") {
+                        if (file_name.endsWith(".mjs")) {
+                            $modLoader.$log("[ERROR] Cannot have ES Modules in when_discovered");
+                            alert(`AsyncExec: Cannot use when_discovered with ESM, @${this.json.id}:${file_name}`);
+                            continue;
+                        }
                         $modLoader.$runEval(fileData, {
                             mod: this
                         });
@@ -373,6 +391,25 @@
                         if ((/\_require$/).test(runat)) {
                             runat = runat.match(/(.*)\_require$/)[1];
                             req = true;
+                        }
+                        if (file_name.endsWith(".mjs")) {
+                            if (req) {
+                                $modLoader.$log("[ERROR] Cannot have ES Modules with requre");
+                                alert(`AsyncExec: Cannot use require with ESM, @${this.json.id}:${file_name}`);
+                                continue;
+                            }
+                            let split = file_name.split("/");
+                            let file = split.pop();
+                            let mf = new ModFile(this, {
+                                base: split.join("/"), file
+                            }, {
+                                formatMap: {
+                                    "mjs": { target: "ks", delta: false, encrypt: false, parser: "esm_no_iife" }
+                                }
+                            });
+                            let ds = await mf.resolveDataSource();
+                            fileData = await _read_file(ds);
+                            data = fileData.toString("utf-8");
                         }
                         $modLoader.$execScripts[runat].push({
                             data, req
