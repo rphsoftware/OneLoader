@@ -148,8 +148,11 @@
         }
 
         static bufferFromGeneratedCode(generatedCode, useIIFE) {
-            const wrappedCode = `${useIIFE ? "(function(){" : ""}${generatedCode}${useIIFE ? "})()" : ""}`;
-            return Buffer.from(wrappedCode);
+            const wrappedCode = `(function(){${generatedCode}})()`;
+            if (useIIFE)
+                return Buffer.from(wrappedCode);
+            else
+                return Buffer.from(generatedCode);
         }
 
         static buildRollupFileId(fingerprint, filename) {
