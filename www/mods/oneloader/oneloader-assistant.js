@@ -573,11 +573,13 @@ ${JSON.stringify(plugins, null, 2)}`);
             this._oneLoaderModList.setHandler('cancel', this.onWindowCancel.bind(this));
             this.addChild(this._oneLoaderModList);
 
-            this._oneLoaderDecrypt = new OneLoaderDecrypt();
-            this._oneLoaderDecrypt.deactivate();
-            this._oneLoaderDecrypt.y = 44;
-            this._oneLoaderDecrypt.setHandler('cancel', this.onWindowCancel.bind(this));
-            this.addChild(this._oneLoaderDecrypt);
+            if(!$modLoader.isInTestMode) {
+                this._oneLoaderDecrypt = new OneLoaderDecrypt();
+                this._oneLoaderDecrypt.deactivate();
+                this._oneLoaderDecrypt.y = 44;
+                this._oneLoaderDecrypt.setHandler('cancel', this.onWindowCancel.bind(this));
+                this.addChild(this._oneLoaderDecrypt);
+            }
 
             this._oneLoaderSpecial = new OneLoaderSpecial();
             this._oneLoaderSpecial.deactivate();
@@ -585,12 +587,16 @@ ${JSON.stringify(plugins, null, 2)}`);
             this._oneLoaderSpecial.setHandler('cancel', this.onWindowCancel.bind(this));
             this.addChild(this._oneLoaderSpecial);
 
-            this._optionWindows = [this._oneLoaderModList, this._oneLoaderDecrypt, this._oneLoaderSpecial];
+            if(!$modLoader.isInTestMode) {
+                this._optionWindows = [this._oneLoaderModList, this._oneLoaderDecrypt, this._oneLoaderSpecial];
+            } else {
+                this._optionWindows = [this._oneLoaderModList, this._oneLoaderSpecial];
+            }
         }
 
         makeCommandList() {
             this.addCommand("MANAGE MODS", 'ok', true);
-            this.addCommand("DECRYPT", 'ok', true);
+            if (!$modLoader.isInTestMode) this.addCommand("DECRYPT", 'ok', true);
             this.addCommand("OPTIONS", 'ok', true);
         }
         maxCols() {
@@ -599,7 +605,7 @@ ${JSON.stringify(plugins, null, 2)}`);
 
         passHelpWindow(helpWindow) {
             this._oneLoaderModList._helpWindow = helpWindow;
-            this._oneLoaderDecrypt._helpWindow = helpWindow;
+            if (!$modLoader.isInTestMode) this._oneLoaderDecrypt._helpWindow = helpWindow;
             this._oneLoaderSpecial._helpWindow = helpWindow;
             this._helpWindow = helpWindow;
         }
@@ -609,8 +615,13 @@ ${JSON.stringify(plugins, null, 2)}`);
                 this._oneLoaderModList.activate();
                 this._oneLoaderModList.select(0);
             } else if (this.index() === 1) { 
-                this._oneLoaderDecrypt.activate();
-                this._oneLoaderDecrypt.select(0);
+                if (!$modLoader.isInTestMode) {
+                    this._oneLoaderDecrypt.activate();
+                    this._oneLoaderDecrypt.select(0);
+                } else {
+                    this._oneLoaderSpecial.activate();
+                    this._oneLoaderSpecial.select(0);
+                }
             } else if (this.index() === 2) { 
                 this._oneLoaderSpecial.activate();
                 this._oneLoaderSpecial.select(0);
@@ -625,8 +636,13 @@ ${JSON.stringify(plugins, null, 2)}`);
                 this._oneLoaderModList.refresh();
             }
             if (this.index() === 1) {
-                this._oneLoaderDecrypt.select(0);
-                this._oneLoaderDecrypt.refresh();
+                if (!$modLoader.isInTestMode) {
+                    this._oneLoaderDecrypt.select(0);
+                    this._oneLoaderDecrypt.refresh();
+                } else {
+                    this._oneLoaderSpecial.select(0);
+                    this._oneLoaderSpecial.refresh();
+                }
             }
             if (this.index() === 2) {
                 this._oneLoaderSpecial.select(0);
@@ -645,7 +661,10 @@ ${JSON.stringify(plugins, null, 2)}`);
                 }
             } else if (this.index() === 1) {
                 if (this._helpWindow) {
-                    this._helpWindow.setText("Decrypt the game here");
+                    if (!$modLoader.isInTestMode)
+                        this._helpWindow.setText("Decrypt the game here");
+                    else
+                        this._helpWindow.setText("General OneLoader options");
                 }
             } else if (this.index() === 2) {
                 if (this._helpWindow) {
