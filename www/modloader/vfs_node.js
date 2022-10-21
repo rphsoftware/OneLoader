@@ -63,7 +63,12 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
         } catch(e) {}
 
         let _native_fs_location = path.join(base, ...components);
-        let _native_fs_files = nativefs.readdirSync(_native_fs_location);
+        let _native_fs_files = [];
+        try {
+            _native_fs_files = nativefs.readdirSync(_native_fs_location);
+        } catch(e) {
+            window._logLine("vfs_node.js: Failed to nativefs.readdirSync: " + _native_fs_location + ", because it doesn't exist!");
+        }
         for (let file of _native_fs_files) {
             if (_lowercase_name_lock.has(file.toLowerCase())) continue;
 
