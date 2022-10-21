@@ -1,6 +1,7 @@
 (function b() {
     window._logLine("-=-=-= Early loader =-=-=-");
 
+
     const { MAX_MANIFEST_VERSION, ID_BLACKLIST, EXTENSION_RULES, DATA_RULES } = $ONELOADER_CONFIG;
 
     const StreamZip = require('./modloader/lib/node_stream_zip.js');
@@ -68,6 +69,7 @@
         isInTestMode: window.nw.App.argv[0] === "test",
         $parsers: new Map(),
         $rollup: null,
+        $packageJsonPatchset: []
     }; // BaseModLoader object
 
     /* Install the argv handler and shadow the true argv object to allow the base game to work normally */ {
@@ -446,6 +448,14 @@
         }
 
         async processV1Mod() {
+            if (this.json._flags && this.json._flags.includes("package_json_editing")) {
+                if (!this.json.packagejson_delta) {
+                    $modLoader.$log("Are you high? You asked for package json editing and then didn't provide any deltas! Get a grip!");
+                } else {
+                    $modLoader.$packageJsonPatchset.push(...this.json.packagejson_delta);
+                }
+            }
+
             await this.processAsyncExecV1();
             if (this.json.files.assets) {
                 await this.processAssetsV1(this.json.files.assets);
@@ -818,6 +828,10 @@
                 errorCount++;
             }
         }
+
+        window._logLine("Checking for package.json changes");
+        $oneLoaderPackageJsonPatchingSubsystem.ensureBackups();
+        $oneLoaderPackageJsonPatchingSubsystem.apply($modLoader.$packageJsonPatchset);
 
         window._logLine("Early loading complete, starting loader stage 2");
         $modLoader.syncConfig();
