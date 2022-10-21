@@ -252,6 +252,28 @@
             return fileData;
         }
     }
+
+    class RawAsset extends ModFile {
+        get targetExtension() {
+            return this.srcExtension;
+        }
+        get injectionPoint() {
+            return `${path.join(this.srcPath, this.destFileName).replace(/\\/g, "/").toLowerCase()}.${this.targetExtension}`;
+        }
+        get extensionRule() {
+            return null;
+        }
+        async buildFileData() {
+            return {
+                injectionPoint: this.injectionPoint,
+                ogName: `${this.destFileName}.${this.targetExtension}`,
+                mode: "pass",
+                dataSource: await this.mod.resolveDataSource(path.join(this.srcPath, this.srcFile)),
+                delta: false,
+            };
+        }
+    }
+
     class ModAsset extends ModFile {
         get targetExtension() {
             return this.extensionRule ? this.extensionRule.target_extension : this.srcExtension;
@@ -329,6 +351,18 @@
                 }
             }
         }
+
+        async processRawV1(list) {
+            for (let el of list) {
+                let patchedFiles = await this.processListEntryV1(el);
+                for (let fileDeclaration of patchedFiles) {
+                    const modAsset = new RawAsset(this, fileDeclaration, null);
+
+                    this.files.push(await modAsset.buildFileData());
+                }
+            }
+        }
+
         async processDataRulesV1(rules) {
             let { jsonKeys, mountPoint, pluginList } = rules;
             let allEntries = new Set();
@@ -459,6 +493,9 @@
             await this.processAsyncExecV1();
             if (this.json.files.assets) {
                 await this.processAssetsV1(this.json.files.assets);
+            }
+            if (this.json.files.raw) {
+                await this.processRawV1(this.json.files.raw);
             }
             await $modLoader.$runScripts("when_discovered_2", {
                 mod: this
