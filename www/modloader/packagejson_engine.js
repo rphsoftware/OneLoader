@@ -42,7 +42,15 @@
             console.log("Writing new file");
             native_fs.writeFileSync(packageJsonLocation, JSON.stringify(morphedDocument, null, 2));
 
-            chrome.runtime.reload();
+            // Editing the package.json file can change the Chromium launch arguments.
+            // nwjs doesn't support restarting the Chromium instance without full process restart and
+            // NodeJS doesn't support something like execve(), hence there is no
+            // way for us to replace the Chromium instance in-process.
+            // (chromium.runtime.reload() is closer to reloading a tab than restarting the whole browser)
+            // Spawning and detaching a child process will cause Steam to stop tracking play time.
+            // Just tell the user to restart the game to avoid surprises why the changes don't apply.
+            alert("Please restart the game.");
+            nw.App.quit();
         }
     }
 
