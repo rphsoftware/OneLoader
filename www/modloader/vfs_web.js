@@ -4,59 +4,30 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
             $modLoader.$vfsTrace("WEB REQUEST " + JSON.stringify(data));
             let url = new URL(data.request.url);
 
-            if ($modLoader.isInTestMode) {
-                if (url.origin === window.location.origin) {
-                    let vfsPath = url.pathname;
-                    try {
-                        let rdata = await _vfs_resolve_file(vfsPath);
-                        let hS = "";
-                        for (let header in data.responseHeaders) {
-                            hS = `${hS}${header}: ${data.responseHeaders[header]}\n`;
-                        }
-
-                        let responseBody = `HTTP/1.1 200 OK\n${hS}\n`;
-                        responseBody = Buffer.concat([Buffer.from(responseBody), rdata]).toString("base64");
-                        return {
-                            interceptionId: data.interceptionId,
-                            rawResponse: responseBody
-                        };
-                    } catch(e) {
-                        window._logLine("Error occured when building response body: " + e.stack);
-                        return {
-                            interceptionId: data.interceptionId
-                        }
+            if (url.origin === window.location.origin) {
+                let vfsPath = url.pathname.replace(/^[\/\\]*www[\/\\]*/, "");
+                try {
+                    let rdata = await _vfs_resolve_file(vfsPath);
+                    let hS = "";
+                    for (let header in data.responseHeaders) {
+                        hS = `${hS}${header}: ${data.responseHeaders[header]}\n`;
                     }
-                } else {
+
+                    let responseBody = `HTTP/1.1 200 OK\n${hS}\n`;
+                    responseBody = Buffer.concat([Buffer.from(responseBody), rdata]).toString("base64");
+                    return {
+                        interceptionId: data.interceptionId,
+                        rawResponse: responseBody
+                    };
+                } catch(e) {
+                    window._logLine("Error occured when building response body: " + e.stack);
                     return {
                         interceptionId: data.interceptionId
                     }
                 }
             } else {
-                if (url.origin === window.location.origin && url.pathname.startsWith("/www/")) {
-                    let vfsPath = url.pathname.replace(/^[\/\\]*www[\/\\]*/, "");
-                    try {
-                        let rdata = await _vfs_resolve_file(vfsPath);
-                        let hS = "";
-                        for (let header in data.responseHeaders) {
-                            hS = `${hS}${header}: ${data.responseHeaders[header]}\n`;
-                        }
-
-                        let responseBody = `HTTP/1.1 200 OK\n${hS}\n`;
-                        responseBody = Buffer.concat([Buffer.from(responseBody), rdata]).toString("base64");
-                        return {
-                            interceptionId: data.interceptionId,
-                            rawResponse: responseBody
-                        };
-                    } catch(e) {
-                        window._logLine("Error occured when building response body: " + e.stack);
-                        return {
-                            interceptionId: data.interceptionId
-                        }
-                    }
-                } else {
-                    return {
-                        interceptionId: data.interceptionId
-                    }
+                return {
+                    interceptionId: data.interceptionId
                 }
             }
         }
@@ -82,35 +53,19 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
                                 chrome.debugger.sendCommand(debugee, "Network.continueInterceptedRequest", await buildResponseBody(data));
                             }
                         });
-                        if (!$modLoader.isInTestMode) {
-                            chrome.debugger.sendCommand( 
-                                debugee, 
-                                "Network.setRequestInterception", 
-                                {
-                                    enabled: true, 
-                                    patterns: [ 
-                                        {
-                                            urlPattern: window.location.origin + "/www/*",
-                                            interceptionStage: "HeadersReceived"
-                                        }
-                                    ]
-                                }
-                            );
-                        } else {
-                            chrome.debugger.sendCommand( 
-                                debugee, 
-                                "Network.setRequestInterception", 
-                                {
-                                    enabled: true, 
-                                    patterns: [ 
-                                        {
-                                            urlPattern: window.location.origin + "/*",
-                                            interceptionStage: "HeadersReceived"
-                                        }
-                                    ]
-                                }
-                            );
-                        }
+                        chrome.debugger.sendCommand( 
+                            debugee, 
+                            "Network.setRequestInterception", 
+                            {
+                                enabled: true, 
+                                patterns: [ 
+                                    {
+                                        urlPattern: window.location.origin + "/*",
+                                        interceptionStage: "HeadersReceived"
+                                    }
+                                ]
+                            }
+                        );
 
                         setTimeout(resolve, 100);
                     });
@@ -243,6 +198,7 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
             $modLoader.$log(`[VFS_WEB] Proxy server listening on Port 127.0.0.1:${port}`);
 
             function beforeRequestInterceptor(details) {
+                $modLoader.$vfsTrace("VFS_WEB REQUEST " + JSON.stringify(details));
                 let u = new URL(details.url);
                 if (u.pathname === "/www/modloader/one_loader_sw.js") return null;
                 return {redirectUrl: `http://127.0.0.1:${port}/${SERVER_KEY}${u.pathname}`}
@@ -250,12 +206,13 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
 
             chrome.webRequest.onBeforeRequest.addListener(beforeRequestInterceptor, {
                 urls: [ 
-                    window.location.origin + "/www/*",
-                    window.location.origin + "/" + TEST_KEY
+                    window.location.origin + "/*"
                 ]
             }, ["blocking"])
+            $modLoader.$log(`[VFS_WEB] Registered request listener ${window.location.origin}`);
 
             window.addEventListener("beforeunload", function(e) {
+                $modLoader.$log(`[VFS_WEB] Unregistering request listener ${window.location.origin}`);
                 chrome.webRequest.onBeforeRequest.removeListener(beforeRequestInterceptor);
                 server.close();
             });
