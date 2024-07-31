@@ -7,6 +7,20 @@ if (window.nw.App.argv[0] !== "test") {
         "ogg": { "encrypt": "rpgmaker", "target_extension": "rpgmvo" }
     };
 
+    let LANGUAGE = "en";
+    try {
+        const fs = require("fs");
+        eval(fs.readFileSync("www/js/plugins.js", "utf8"))
+        LANGUAGE = $plugins.filter(
+            a => a.name.toLowerCase() === "text_language_processor"
+        )[0].parameters["Default Language"];
+    } catch (error) {
+        console.log("Failed to read default language.");
+        console.log(error);
+    } finally {
+        $plugins = undefined;
+    }
+
     const DATA_RULES = [
         {
             jsonKeys: [
@@ -35,7 +49,7 @@ if (window.nw.App.argv[0] !== "test") {
                 "yamld": { target: "HERO", delta: true, delta_method: "yaml", encrypt: true },
                 "hero": { target: "HERO", delta: false, encrypt: false }
             },
-            mountPoint: "languages/en"
+            mountPoint: "languages/" + LANGUAGE
         },
         {
             jsonKeys: [
