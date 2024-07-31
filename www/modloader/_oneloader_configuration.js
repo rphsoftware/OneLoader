@@ -10,15 +10,16 @@ if (window.nw.App.argv[0] !== "test") {
     let LANGUAGE = "en";
     try {
         const fs = require("fs");
-        eval(fs.readFileSync("www/js/plugins.js", "utf8"))
-        LANGUAGE = $plugins.filter(
+        const js = fs.readFileSync("www/js/plugins.js", "utf8")
+        eval(js.replace("var $plugins", "window.___tmp_plugins"))
+        LANGUAGE = window.___tmp_plugins.filter(
             a => a.name.toLowerCase() === "text_language_processor"
         )[0].parameters["Default Language"];
     } catch (error) {
         console.log("Failed to read default language.");
         console.log(error);
     } finally {
-        $plugins = undefined;
+        window.___tmp_plugins = undefined;
     }
 
     const DATA_RULES = [
