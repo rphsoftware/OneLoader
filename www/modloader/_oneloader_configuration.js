@@ -7,6 +7,22 @@ if (window.nw.App.argv[0] !== "test") {
         "ogg": { "encrypt": "rpgmaker", "target_extension": "rpgmvo" }
     };
 
+    let LANGUAGE = "en";
+    try {
+        const fs = require('fs');
+        for(const file of fs.readdirSync("www/languages")) {
+            if (!fs.statSync("www/languages/" + file).isDirectory()) {
+                continue
+            }
+            if(file === "en") {
+                continue
+            }
+            LANGUAGE = file;
+        }
+    } catch (e) {
+        console.log("Failed to read language directory. Defaulting to en.");
+    }
+
     const DATA_RULES = [
         {
             jsonKeys: [
@@ -35,7 +51,7 @@ if (window.nw.App.argv[0] !== "test") {
                 "yamld": { target: "HERO", delta: true, delta_method: "yaml", encrypt: true },
                 "hero": { target: "HERO", delta: false, encrypt: false }
             },
-            mountPoint: "languages/en"
+            mountPoint: "languages/" + LANGUAGE
         },
         {
             jsonKeys: [
