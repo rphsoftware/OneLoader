@@ -14,10 +14,16 @@ if ($modLoader.config && $modLoader.config._autoUpdater && $modLoader.config._au
         fs.writeFileSync("_oneloader_update.zip", Buffer.from(bundle));
         let zip = new StreamZip.async({ file: "_oneloader_update.zip" });
         let entries = await zip.entries();
+        let stripWww = false;
+        try {
+            fs.accessSync('www');
+        } catch (E) {
+            stripWww = true;
+        }
         for (let el in entries) {
-            try { if (entries[el].isDirectory) { fs.mkdirSync(el); } } catch (e) { }
+            try { if (entries[el].isDirectory) { fs.mkdirSync(stripWww ? el.replace(/^[\/\\]*www[\/\\]*/, "") : el); } } catch (e) { }
             if (entries[el].isDirectory) continue;
-            fs.writeFileSync(el, await zip.entryData(el));
+            fs.writeFileSync(stripWww ? el.replace(/^[\/\\]*www[\/\\]*/, "") : el, await zip.entryData(el));
         }
         $modLoader.config._autoUpdater.performUpdate = false;
         $modLoader.config._autoUpdater.updateBundleURL = undefined;
