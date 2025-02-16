@@ -974,8 +974,7 @@
 
             await $modLoader.$runScripts("exclusion_processor", {
                 exclusions,
-                requirements,
-                entries
+                requirements
             });
 
             let exclusionFailures = [];
@@ -999,7 +998,6 @@
             await $modLoader.$runScripts("exclusion_processor2", {
                 exclusions,
                 requirements,
-                entries,
                 exclusionFailures,
                 requirementFailures
             });
