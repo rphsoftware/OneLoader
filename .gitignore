@@ -21,6 +21,7 @@ snapshot_blob.bin
 locales/
 pnacl/
 swiftshader/
+.DS_Store
 
 # BASE OMORI STUFF
 package.json
