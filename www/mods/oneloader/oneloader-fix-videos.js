@@ -9,6 +9,12 @@ if ($modLoader.$nwMajor < 45) {
             let objectURL = URL.createObjectURL(b);
             let vidObj = old.call(this, {src: objectURL, mime: "video/" + videoSrc.split(".")[videoSrc.split(".").length - 1]}, scaleMode, crossorigin, autoPlay);
             let a = setInterval(function( ){
+                if (!vidObj || !vidObj.source) {
+                    window._logLine("YANFLY VIDEO some bullshit happened");
+                    URL.revokeObjectURL(objectURL);
+                    clearInterval(a);
+                    return;
+                }
                 if (vidObj.source.readyState === 4 && (vidObj.source.buffered.end(0) >= vidObj.source.duration) && vidObj.source.ended) {
                     window._logLine("YANFLY VIDEO Revoking object url");
                     URL.revokeObjectURL(objectURL);
