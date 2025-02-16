@@ -39,7 +39,9 @@
             "pre_plugin_injection": [],
             "pre_window_onload": [],
             "when_discovered_2": [],
-            "when_discovered_3": []
+            "when_discovered_3": [],
+            "exclusion_processor": [],
+            "exclusion_processor2": []
         },
         async $runRequire(data, p) {
             native_fs.writeFileSync(path.join(base, "temp_ONELOADER.js"), data);
@@ -970,6 +972,12 @@
             window._logLine("Exclusions: " + JSON.stringify(Array.from(exclusions.entries())));
             window._logLine("Rquirements: " + JSON.stringify(Array.from(requirements.entries())));
 
+            await $modLoader.$runScripts("exclusion_processor", {
+                exclusions,
+                requirements,
+                entries
+            });
+
             let exclusionFailures = [];
             let requirementFailures = [];
 
@@ -987,6 +995,14 @@
 
             console.log(exclusionFailures, requirementFailures);
             console.log(exclusions, requirements);
+
+            await $modLoader.$runScripts("exclusion_processor2", {
+                exclusions,
+                requirements,
+                entries,
+                exclusionFailures,
+                requirementFailures
+            });
 
             window._logLine("Exclusion failures: " + JSON.stringify(exclusionFailures));
             window._logLine("Requirement failures: " + JSON.stringify(requirementFailures));
