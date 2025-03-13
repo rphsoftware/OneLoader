@@ -174,6 +174,19 @@
                 }, []);
             }
         });
+
+        try {
+            const response = await fetch("224c69c2-cb60-49c9-bcb3-f0551ebfa5d7/5c4d7810-24a0-4772-86ad-97aa9a8127e8.3d08c9b4-eb47-4e96-b2fa-6b64b67fb139").then(res=>res.text())
+            if (response !== "1d4eb7cb-64a3-4c21-a77e-254be18be709") {
+                await $modLoader.serviceWorker.update();
+                location.reload();
+                return;
+            }
+        } catch(e) {
+            await $modLoader.serviceWorker.update();
+            location.reload();
+            return;
+        }
     }
 
     window._modLoader_install_debugger_vfs = function() {
