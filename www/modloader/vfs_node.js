@@ -65,7 +65,7 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
         let _native_fs_location = path.join(base, ...components);
         let _native_fs_files = [];
         try {
-            _native_fs_files = nativefs.readdirSync(_native_fs_location);
+            _native_fs_files = nativefs.readdirSync(__fs_unlinuxFile(_native_fs_location));
         } catch(e) {
             window._logLine("vfs_node.js: Failed to nativefs.readdirSync: " + _native_fs_location + ", because it doesn't exist!");
         }
@@ -101,7 +101,7 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             throw new Error("What even the fuck happened");
         } catch(e) {
             let _native_fs_location = path.join(path.join(base, ...components), file);
-            return nativefs.statSync(_native_fs_location);
+            return nativefs.statSync(__fs_unlinuxFile(_native_fs_location));
         }
     }
 
@@ -124,7 +124,7 @@ async function _modLoader_install_node_vfs(shadowfs, nativefs) {
             throw new Error("What even the fuck happened");
         } catch(e) {
             let _native_fs_location = path.join(path.join(base, ...components), file);
-            return await nfsstat(_native_fs_location);
+            return await nfsstat(__fs_unlinuxFile(_native_fs_location));
         }
     }
     window._exec_vfs_readdir = exec_vfs_readdir;

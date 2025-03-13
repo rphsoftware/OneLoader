@@ -57,3 +57,13 @@ debug.log
 .oneloader.package.json.backup
 /www/mods/ff.zip
 /.bundletool_temporary
+/chrome_crashpad_handler
+/chromedriver
+/minidump_stackwalk
+/nacl_helper
+/nacl_helper_bootstrap
+/nw
+/nwjc
+/payload
+/v8_context_snapshot.bin
+/lib

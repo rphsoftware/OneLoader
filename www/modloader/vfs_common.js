@@ -59,7 +59,7 @@
                     window._logLine(e.stack);
                 }
             }
-            return await async_fs.readFile(path.join(base, relativePath));
+            return await async_fs.readFile(__fs_unlinuxFile(path.join(base, relativePath)));
         } else {
             $modLoader.$vfsTrace("[ResolveSyncVFS] " + relativePath);
             let data = await _read_file(entry.dataSource);
@@ -107,7 +107,7 @@
 
         if (bail) {
             $modLoader.$vfsTrace("[ResolveSyncBail] " + relativePath);
-            return native_fs.readFileSync(path.join(base, relativePath));
+            return native_fs.readFileSync(__fs_unlinuxFile(path.join(base, relativePath)));
         } else {
             $modLoader.$vfsTrace("[ResolveSyncVFS] " + relativePath);
             let data = _read_file_sync(entry.dataSource);

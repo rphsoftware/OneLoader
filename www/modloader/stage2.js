@@ -267,7 +267,7 @@ async function _modloader_stage2(knownMods) {
 
             let base_file = _modloader_encryption.decrypt(
                 await async_fs.readFile(
-                    path.join(base, k)
+                    __fs_unlinuxFile(path.join(base, k))
                 )
             ).toString("utf-8");
             let files = deltaFiles.get(k);

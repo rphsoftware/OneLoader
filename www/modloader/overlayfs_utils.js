@@ -3,7 +3,32 @@
     const util = require('util');
     const asyncRF = util.promisify(fs.readFile);
     const zlib = require('zlib');
-    
+    const path = require('path');
+
+    const unlinux_cache = new Map();
+
+    window.__fs_unlinuxFile = (f) => {
+        if (process.platform !== "linux") return f;
+
+        let base = path.dirname(f).toLowerCase();
+        let fname = path.basename(f).toLowerCase();
+
+        if (base.split("/").length > 2) {
+            base = __fs_unlinuxFile(base);
+        }
+
+        const list = (unlinux_cache.has(base) ? unlinux_cache.get(base) : (() => {
+            const l = fs.readdirSync(base);
+            unlinux_cache.set(base, l);
+            return l;
+        })());
+
+        const index = list.map(a => a.toLowerCase()).indexOf(fname);
+        const resolved = list[index];
+
+        return `${base}/${resolved}`;
+    }
+
     function _overlay_fs_split_path(path) {
         let pathComponentRe = /[\/\\]*([^\\\/]+)[\/\\]*/g;
         let pathComponents = [];
@@ -46,7 +71,7 @@
     async function _read_file(dataSource) {
         $modLoader.$vfsTrace("[READFILE] " + dataSource.type);
         if (dataSource.type === "filesystem") {
-            return await asyncRF(dataSource.path);
+            return await asyncRF(__fs_unlinuxFile(dataSource.path));
         }
         if (dataSource.type === "zip") {
             return await dataSource.sz.entryData(dataSource.entry);
@@ -63,7 +88,7 @@
     function _read_file_sync(dataSource) {
         $modLoader.$vfsTrace("[READFILE] " + dataSource.type);
         if (dataSource.type === "filesystem") {
-            return fs.readFileSync(dataSource.path);
+            return fs.readFileSync(__fs_unlinuxFile(dataSource.path));
         }
         if (dataSource.type === "zip") {
             return dataSource.sz.resolvedStreamZip.entryDataSync(dataSource.entry);
