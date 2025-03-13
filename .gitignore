@@ -50,3 +50,10 @@ latest.log
 /www/Game.rpgproject
 OMORI.exe
 steam_appid.txt
+
+/www/mods/omoriismissing
+debug.log
+
+.oneloader.package.json.backup
+/www/mods/ff.zip
+/.bundletool_temporary
