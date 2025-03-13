@@ -18,10 +18,6 @@
     },
     "asyncExec":[
         {
-            "file":"oneloader-fix-videos.js",
-            "runat":"pre_window_onload"
-        },
-        {
             "file":"oneloader-updater.js",
             "runat":"pre_window_onload"
         },

@@ -758,6 +758,8 @@
         // Initialize on-screen logging framework
         window._logLine("Loading configuration");
         $oneLoaderGui.pst("Loading...");
+        $oneLoaderGui.setHt("Starting");
+
         if (!native_fs.existsSync(path.join(base, "save"))) {
             native_fs.mkdirSync(path.join(base, "save"));
         }

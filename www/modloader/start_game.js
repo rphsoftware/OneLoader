@@ -56,6 +56,7 @@ async function _start_game() {
         s.src = script;
         document.body.appendChild(s);
         await new Promise(resolve => {
+            console.log("script onload");
             s.onload = resolve;
         })
     }

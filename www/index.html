@@ -7,12 +7,18 @@
     <meta name="viewport" content="user-scalable=no">
     <title>OMORI</title>
     <script>
+        window.legacyMode = false;
+    </script>
+    <script>
+        if (!window.legacyMode) window.$__1l_sw_pre_registration = navigator.serviceWorker.register("sw.js");
+    </script>
+    <script>
         if (window.nw.App.argv.length < 1) {
             alert("OMORI must be launched directly from Steam.");
             process.exit(0);
         }
     </script>
-
+  <script>window.navigator.plugins.namedItem = function() {return null;}</script>
     <script src="modloader/lib/fast-json-patch.min.js"></script>
     <script src="modloader/lib/imagediff2.js"></script>
     <script src="modloader/lib/mime.js"></script>
