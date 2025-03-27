@@ -3,7 +3,7 @@ if (window.nw.App.argv[0] !== "test") {
     const MAX_MANIFEST_VERSION = 1;
     const ID_BLACKLIST = ["gomori"];
     const EXTENSION_RULES = {
-        "png": { "encrypt": "rpgmaker", "target_extension": "rpgmvp" },
+        "png": { "encrypt": "rpgmaker", "target_extension": "rpgmvp", "raw": ["img/system/window.png", "img/system/loading.png"]  },
         "ogg": { "encrypt": "rpgmaker", "target_extension": "rpgmvo" }
     };
 

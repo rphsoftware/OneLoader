@@ -298,6 +298,11 @@
         }
 
         get extensionRule() {
+            if (EXTENSION_RULES[this.srcExtension] && EXTENSION_RULES[this.srcExtension].raw && EXTENSION_RULES[this.srcExtension].raw.includes(
+                (this.srcPath + "/" + this.srcFile).toLowerCase()
+            )) {
+                return null;
+            }
             return EXTENSION_RULES[this.srcExtension] || null;
         }
     }

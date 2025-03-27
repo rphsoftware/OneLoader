@@ -15,17 +15,23 @@ if ($modLoader.$nwMajor < 45) {
                     clearInterval(a);
                     return;
                 }
-                if (vidObj.source.readyState === 4 && (vidObj.source.buffered.end(0) >= vidObj.source.duration) && vidObj.source.ended) {
-                    window._logLine("YANFLY VIDEO Revoking object url");
-                    URL.revokeObjectURL(objectURL);
-                    clearInterval(a);
-                }
             }, 300);
             return vidObj;
         } else {
             old.call(this, ...arguments);
         }
     };
+
+    let oldDestroy = PIXI.VideoBaseTexture.destroy;
+    PIXI.VideoBaseTexture.destroy = function() {
+        let cs = this.source.src;
+        console.log(cs);
+        if (cs.startsWith("blob:")) {
+            window._logLine("YANFLY VIDEO Revoking object url");
+            URL.revokeObjectURL(cs);
+        }
+        oldDestroy.call(this, ...arguments);
+    }
 
     let old_stock_playvideo = Graphics._playVideo;
     let old_onvideoend = Graphics._onVideoEnd;
