@@ -823,8 +823,12 @@
                     mod = new DirectoryMod(path.join(base, "mods", mod_file));
                 } else {
                     if (!mod_file.endsWith(".zip")) {
-                        window._logLine("| [ERROR] Skipping, not directory and extension isn't zip");
-                        errorCount++;
+                        if (mod_file === ".DS_Store") {
+                            window._logLine("| [INFO] Skipping .DS_Store");
+                        } else {
+                            window._logLine("| [ERROR] Skipping, not directory and extension isn't zip");
+                            errorCount++;
+                        }
                         continue;
                     }
                     mod = new ZipMod(path.join(base, "mods", mod_file));
