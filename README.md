@@ -1,6 +1,10 @@
 # OneLoader
 High performance mod loader for OMORI
 
+![](https://img.colon-three.com/onebanner-2.png)
+
+<sup>OneLoader mascot art by [bajamaid](https://twitter.com/bajamaid)</sup>
+
 ## Credits/Licensing
 This project contains in part or in full the following projects:
 
