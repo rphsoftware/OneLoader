@@ -1092,9 +1092,14 @@
         let pluginOrderingRules = new Map();
         for (let modEntry of $modLoader.knownMods.values()) {
             for (let pluginName of modEntry.pluginsDelta) {
+                alert(`The mod ${modEntry.json.id} is using an UNSUPPORTED, DEPRECATED FEATURE. (Plugin Deltas)\nPlease contact the author of ${modEntry.json.id} (Name: ${modEntry.json.name}) in order to get this resolved.`);
                 let fileName = pluginName.match(/[^\/\\]*$/)[0].toLowerCase();
                 fileName = fileName.match(/(.*)\.[a-z]*$/)[1];
                 pluginLocks.add(fileName);
+                pluginOrderingRules.set(fileName, {
+                    culprit: modEntry,
+                    rule: {"at":-1}
+                });
             }
         }
         for (let modEntry of $modLoader.knownMods.values()) {
