@@ -497,6 +497,15 @@
                 }
             }
 
+            if (this.json._flags && this.json._flags.includes("randomize_plugin_name")) {
+                if (this.json.plugins_ordered) {
+                    throw new Error("Randomized plugin names or plugins_ordered. Choose one.");
+                }
+            }
+            if (!this.json.plugins_ordered) {
+                this.json.plugins_ordered = {};
+            }
+
             await this.processAsyncExecV1();
             if (this.json.files.assets) {
                 await this.processAssetsV1(this.json.files.assets);
@@ -1080,6 +1089,7 @@
 
         window._logLine("Looking for plugin conflicts...");
         let pluginLocks = new Set();
+        let pluginOrderingRules = new Map();
         for (let modEntry of $modLoader.knownMods.values()) {
             for (let pluginName of modEntry.pluginsDelta) {
                 let fileName = pluginName.match(/[^\/\\]*$/)[0].toLowerCase();
@@ -1091,6 +1101,17 @@
             for (let pluginName of modEntry.plugins) {
                 let fileName = pluginName.match(/[^\/\\]*$/)[0].toLowerCase();
                 fileName = fileName.match(/(.*)\.[a-z]*$/)[1];
+                if (modEntry.json.plugins_ordered[fileName]) {
+                    pluginOrderingRules.set(fileName, {
+                        culprit: modEntry,
+                        rule: modEntry.json.plugins_ordered[fileName]
+                    });
+                } else {
+                    pluginOrderingRules.set(fileName, {
+                        culprit: modEntry,
+                        rule: {"at":-1}
+                    });
+                }
                 if (pluginLocks.has(fileName)) {
                     alert("Plugin conflict: " + fileName + " was already replaced when " + modEntry.json.id + " tried to replace it.");
                     throw new Error("Plugin conflicts can't be auto-resolved.");
@@ -1099,6 +1120,7 @@
             }
         }
 
+        $modLoader.pluginOrderingRules = pluginOrderingRules;
         $modLoader.pluginLocks = pluginLocks;
 
         window._logLine("Installing VFS handler (1/2) [Chrome DevTools mode]");
